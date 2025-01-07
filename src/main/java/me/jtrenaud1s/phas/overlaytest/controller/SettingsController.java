@@ -1,14 +1,15 @@
 package me.jtrenaud1s.phas.overlaytest.controller;
 
+import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.scene.control.TableRow;
 import lombok.extern.slf4j.Slf4j;
+import me.jtrenaud1s.phas.overlaytest.fx.view.OverlayViewFX;
 import me.jtrenaud1s.phas.overlaytest.keybind.KeybindListener;
 import me.jtrenaud1s.phas.overlaytest.keybind.KeybindRecorder;
 import me.jtrenaud1s.phas.overlaytest.model.SettingsModel;
-import me.jtrenaud1s.phas.overlaytest.view.SettingsView;
+import me.jtrenaud1s.phas.overlaytest.fx.view.SettingsViewFX;
 
-import javax.swing.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
@@ -16,80 +17,88 @@ import java.util.Set;
 @Slf4j
 public class SettingsController {
     private final SettingsModel model;
-    private final SettingsView view;
+    private final SettingsViewFX view;
+    private final OverlayViewFX overlayView;
     private final KeybindRecorder keybindRecorder;
     private final KeybindListener keybindListener;
     private final String settingsFilePath = "settings.json";
 
-    public SettingsController(SettingsModel model, SettingsView view, KeybindRecorder keybindRecorder, KeybindListener keybindListener) {
+    public SettingsController(SettingsModel model, SettingsViewFX view,
+                              OverlayViewFX overlayView, KeybindRecorder keybindRecorder,
+                              KeybindListener keybindListener) {
         this.model = model;
         this.view = view;
         this.keybindRecorder = keybindRecorder;
         this.keybindListener = keybindListener;
+        this.overlayView = overlayView;
 
         loadSettings();
         setupView();
         setupListeners();
+
+        view.setCountUpSelected(model.isCountUpTimer());
+        view.setShowOverlaySelected(model.isShowOverlayByDefault());
+        view.getCountUpProperty().addListener((obs, oldVal, newVal) -> {
+            model.setCountUpTimer(newVal);
+            saveSettings();
+        });
+        view.getShowOverlayProperty().addListener((obs, oldVal, newVal) -> {
+            model.setShowOverlayByDefault(newVal);
+            saveSettings();
+        });
+
+        if (model.isShowOverlayByDefault()) {
+            overlayView.showOverlay();
+        }
     }
 
     private void setupView() {
-        // Observe model changes
         model.addPropertyChangeListener(evt -> {
-            SwingUtilities.invokeLater(() -> {
-                switch (evt.getPropertyName()) {
-                    case "keybinds" -> updateKeybindTable();
-                    case "feature1Enabled" -> log.info("Feature 1 enabled: {}", model.isFeature1Enabled());
-                    default -> {}
-                }
-            });
+            if ("keybinds".equals(evt.getPropertyName())) {
+                Platform.runLater(this::updateKeybindTable);
+            }
         });
 
         updateKeybindTable();
     }
 
     private void setupListeners() {
-        view.getKeybindTable().addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() == 2) {
-                    int row = view.getKeybindTable().getSelectedRow();
-                    if (row >= 0) {
-                        startKeybindRecording(row);
-                    }
+        view.getKeybindTable().setRowFactory(tv -> {
+            TableRow<SettingsModel.Keybind> row = new TableRow<>();
+            row.setOnMouseClicked(e -> {
+                if (e.getClickCount() == 2 && !row.isEmpty()) {
+                    int rowIndex = row.getIndex();
+                    startKeybindRecording(rowIndex);
                 }
-            }
+            });
+            return row;
         });
 
-        // Register keybinds from the model to the listener
         registerKeybindsToListener();
     }
 
     private void startKeybindRecording(int rowIndex) {
-        keybindListener.pause(); // Pause the listener during recording
+        keybindListener.pause();
 
-        // Temporarily set the keybind chord to "Recording"
         SettingsModel.Keybind keybind = model.getKeybinds().get(rowIndex);
         keybind.setKeys(List.of("Recording"));
-        updateKeybindTable(); // Refresh table to show "Recording"
+        updateKeybindTable();
 
-        // Start recording
         keybindRecorder.startRecording(recordedChord -> {
             String[] keys = recordedChord.split(" \\+ ");
             List<String> newKeybind = List.of(keys);
 
-            // Update with the new keybind and stop recording
             keybind.setKeys(newKeybind);
-            updateKeybindTable(); // Refresh table
-            saveSettings(); // Persist the updated settings
+            updateKeybindTable();
+            saveSettings();
 
-            // Re-register keybinds and resume the listener
             registerKeybindsToListener();
             keybindListener.resume();
         });
     }
 
     private void registerKeybindsToListener() {
-        keybindListener.clearKeybinds(); // Clear existing keybinds
+        keybindListener.clearKeybinds();
 
         for (SettingsModel.Keybind keybind : model.getKeybinds()) {
             log.info("Associating keybind: {} -> {}", keybind.getKeys(), keybind.getName());
@@ -99,22 +108,17 @@ public class SettingsController {
     }
 
     private void updateKeybindTable() {
-        String[] columnNames = {"Keybind Name", "Keybind Chord"};
-        Object[][] data = model.getKeybinds().stream()
-                .map(keybind -> new Object[]{keybind.getName(), keybind.toString()})
-                .toArray(Object[][]::new);
-
-        view.updateKeybindTable(data, columnNames);
+        view.setKeybindData(FXCollections.observableArrayList(model.getKeybinds()));
     }
 
     private void loadSettings() {
         try {
             model.loadFromFile(settingsFilePath);
-            updateKeybindTable(); // Refresh the UI with the loaded data
+            updateKeybindTable();
         } catch (IOException e) {
             log.warn("No existing settings file found. Starting with defaults.", e);
             initializeDefaults();
-            saveSettings(); // Save defaults to create the settings file
+            saveSettings();
         }
     }
 

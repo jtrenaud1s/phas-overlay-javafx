@@ -16,17 +16,17 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SettingsModel {
     @Getter
-    private boolean feature1Enabled;
+    private boolean countUpTimer;
     @Getter
-    private boolean feature2Enabled;
+    private boolean showOverlayByDefault;
     private final List<Keybind> keybinds;
 
     @JsonIgnore // Exclude from serialization
     private transient PropertyChangeSupport propertyChangeSupport;
 
     public SettingsModel() {
-        this.feature1Enabled = false;
-        this.feature2Enabled = false;
+        this.countUpTimer = false;
+        this.showOverlayByDefault = false;
         this.keybinds = new ArrayList<>();
         this.propertyChangeSupport = new PropertyChangeSupport(this);
     }
@@ -35,16 +35,16 @@ public class SettingsModel {
         this.propertyChangeSupport = new PropertyChangeSupport(this);
     }
 
-    public void setFeature1Enabled(boolean feature1Enabled) {
-        boolean oldValue = this.feature1Enabled;
-        this.feature1Enabled = feature1Enabled;
-        propertyChangeSupport.firePropertyChange("feature1Enabled", oldValue, feature1Enabled);
+    public void setCountUpTimer(boolean feature1Enabled) {
+        boolean oldValue = this.countUpTimer;
+        this.countUpTimer = feature1Enabled;
+        propertyChangeSupport.firePropertyChange("countUpTimer", oldValue, feature1Enabled);
     }
 
-    public void setFeature2Enabled(boolean feature2Enabled) {
-        boolean oldValue = this.feature2Enabled;
-        this.feature2Enabled = feature2Enabled;
-        propertyChangeSupport.firePropertyChange("feature2Enabled", oldValue, feature2Enabled);
+    public void setShowOverlayByDefault(boolean showOverlayByDefault) {
+        boolean oldValue = this.showOverlayByDefault;
+        this.showOverlayByDefault = showOverlayByDefault;
+        propertyChangeSupport.firePropertyChange("showOverlayByDefault", oldValue, showOverlayByDefault);
     }
 
     public List<Keybind> getKeybinds() {
@@ -67,8 +67,8 @@ public class SettingsModel {
         ObjectMapper mapper = new ObjectMapper();
         SettingsModel loadedSettings = mapper.readValue(new File(filePath), SettingsModel.class);
 
-        setFeature1Enabled(loadedSettings.feature1Enabled);
-        setFeature2Enabled(loadedSettings.feature2Enabled);
+        setCountUpTimer(loadedSettings.countUpTimer);
+        setShowOverlayByDefault(loadedSettings.showOverlayByDefault);
         keybinds.clear();
         keybinds.addAll(loadedSettings.keybinds);
 
