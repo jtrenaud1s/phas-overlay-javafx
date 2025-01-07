@@ -1,14 +1,11 @@
 package me.jtrenaud1s.phas.overlaytest.controller;
 
-import javafx.application.Platform;
-import javafx.collections.FXCollections;
-import javafx.scene.control.TableRow;
 import lombok.extern.slf4j.Slf4j;
 import me.jtrenaud1s.phas.overlaytest.fx.view.OverlayViewFX;
+import me.jtrenaud1s.phas.overlaytest.fx.view.SettingsViewFX;
 import me.jtrenaud1s.phas.overlaytest.keybind.KeybindListener;
 import me.jtrenaud1s.phas.overlaytest.keybind.KeybindRecorder;
 import me.jtrenaud1s.phas.overlaytest.model.SettingsModel;
-import me.jtrenaud1s.phas.overlaytest.fx.view.SettingsViewFX;
 
 import java.io.IOException;
 import java.util.List;
@@ -21,79 +18,81 @@ public class SettingsController {
     private final OverlayViewFX overlayView;
     private final KeybindRecorder keybindRecorder;
     private final KeybindListener keybindListener;
+
     private final String settingsFilePath = "settings.json";
 
-    public SettingsController(SettingsModel model, SettingsViewFX view,
-                              OverlayViewFX overlayView, KeybindRecorder keybindRecorder,
-                              KeybindListener keybindListener) {
+    public SettingsController(
+            SettingsModel model,
+            SettingsViewFX view,
+            OverlayViewFX overlayView,
+            KeybindRecorder keybindRecorder,
+            KeybindListener keybindListener
+    ) {
         this.model = model;
         this.view = view;
+        this.overlayView = overlayView;
         this.keybindRecorder = keybindRecorder;
         this.keybindListener = keybindListener;
-        this.overlayView = overlayView;
 
+        // 1) Load data from file
         loadSettings();
-        setupView();
+
+        // 2) Initialize the UI from the model
+        initializeViewBindings();
+        updateKeybindTable(); // Fill the table with the model’s list
+
+        // 3) Setup user actions
         setupListeners();
 
-        view.setCountUpSelected(model.isCountUpTimer());
-        view.setShowOverlaySelected(model.isShowOverlayByDefault());
-        view.getCountUpProperty().addListener((obs, oldVal, newVal) -> {
-            model.setCountUpTimer(newVal);
-            saveSettings();
-        });
-        view.getShowOverlayProperty().addListener((obs, oldVal, newVal) -> {
-            model.setShowOverlayByDefault(newVal);
-            saveSettings();
-        });
-
+        // 4) If the user’s setting says “show overlay,” show it
         if (model.isShowOverlayByDefault()) {
             overlayView.showOverlay();
         }
     }
 
-    private void setupView() {
-        model.addPropertyChangeListener(evt -> {
-            if ("keybinds".equals(evt.getPropertyName())) {
-                Platform.runLater(this::updateKeybindTable);
-            }
-        });
+    private void initializeViewBindings() {
+        // The view has SimpleBooleanProperties: countUpProperty, showOverlayProperty
+        // Bind them to the model’s properties (bidirectional if you want live updates both ways).
+        view.getCountUpProperty().bindBidirectional(model.countUpTimerProperty());
+        view.getShowOverlayProperty().bindBidirectional(model.showOverlayByDefaultProperty());
 
-        updateKeybindTable();
+        // Alternatively, you could do the binding in the view class.
+        // But here in the controller is also common practice.
     }
 
     private void setupListeners() {
-        view.getKeybindTable().setRowFactory(tv -> {
-            TableRow<SettingsModel.Keybind> row = new TableRow<>();
-            row.setOnMouseClicked(e -> {
-                if (e.getClickCount() == 2 && !row.isEmpty()) {
-                    int rowIndex = row.getIndex();
-                    startKeybindRecording(rowIndex);
-                }
-            });
-            return row;
+        // Whenever the user toggles the checkboxes in the view,
+        // the model automatically updates (and vice versa).
+        // So no explicit listener is needed for those booleans
+        // unless you want to do additional logic.
+
+        // Double-click on table row => startKeybindRecording
+        view.getKeybindTable().setOnMouseClicked(evt -> {
+            if (evt.getClickCount() == 2 && !view.getKeybindTable().getSelectionModel().isEmpty()) {
+                int rowIndex = view.getKeybindTable().getSelectionModel().getSelectedIndex();
+                startKeybindRecording(rowIndex);
+            }
         });
 
+        // Register existing keybinds with the KeybindListener
         registerKeybindsToListener();
     }
 
     private void startKeybindRecording(int rowIndex) {
         keybindListener.pause();
 
+        // Temporarily show that we're "Recording"
         SettingsModel.Keybind keybind = model.getKeybinds().get(rowIndex);
-        keybind.setKeys(List.of("Recording"));
-        updateKeybindTable();
+        keybind.setKeys(List.of("Recording..."));
+        // The table automatically updates because `model.getKeybinds()` is an ObservableList.
 
         keybindRecorder.startRecording(recordedChord -> {
             String[] keys = recordedChord.split(" \\+ ");
-            List<String> newKeybind = List.of(keys);
+            keybind.setKeys(List.of(keys));
 
-            keybind.setKeys(newKeybind);
-            updateKeybindTable();
-            saveSettings();
-
+            saveSettings();             // persist new keybind
             registerKeybindsToListener();
-            keybindListener.resume();
+            keybindListener.resume();   // done recording
         });
     }
 
@@ -108,15 +107,15 @@ public class SettingsController {
     }
 
     private void updateKeybindTable() {
-        view.setKeybindData(FXCollections.observableArrayList(model.getKeybinds()));
+        // Just set the TableView’s items to the model's ObservableList
+        view.getKeybindTable().setItems(model.getKeybinds());
     }
 
     private void loadSettings() {
         try {
             model.loadFromFile(settingsFilePath);
-            updateKeybindTable();
         } catch (IOException e) {
-            log.warn("No existing settings file found. Starting with defaults.", e);
+            log.warn("No existing settings file found. Using defaults.", e);
             initializeDefaults();
             saveSettings();
         }
@@ -124,16 +123,16 @@ public class SettingsController {
 
     private void initializeDefaults() {
         model.getKeybinds().clear();
-        model.addKeybind(new SettingsModel.Keybind("Open Inventory", List.of("Ctrl", "I")));
-        model.addKeybind(new SettingsModel.Keybind("Jump", List.of("Space")));
-        model.addKeybind(new SettingsModel.Keybind("Run", List.of("Shift", "W")));
+        model.getKeybinds().add(new SettingsModel.Keybind("Open Inventory", List.of("Ctrl", "I")));
+        model.getKeybinds().add(new SettingsModel.Keybind("Jump", List.of("Space")));
+        model.getKeybinds().add(new SettingsModel.Keybind("Run", List.of("Shift", "W")));
     }
 
     private void saveSettings() {
         try {
             model.saveToFile(settingsFilePath);
         } catch (IOException e) {
-            System.err.println("Failed to save settings: " + e.getMessage());
+            log.error("Failed to save settings: {}", e.getMessage());
         }
     }
 }

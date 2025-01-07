@@ -1,92 +1,82 @@
 package me.jtrenaud1s.phas.overlaytest.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SettingsModel {
+    private final BooleanProperty countUpTimer = new SimpleBooleanProperty(false);
+    private final BooleanProperty showOverlayByDefault = new SimpleBooleanProperty(false);
+    // Return the observable list directly
     @Getter
-    private boolean countUpTimer;
-    @Getter
-    private boolean showOverlayByDefault;
-    private final List<Keybind> keybinds;
-
-    @JsonIgnore // Exclude from serialization
-    private transient PropertyChangeSupport propertyChangeSupport;
+    private final ObservableList<Keybind> keybinds = FXCollections.observableArrayList();
 
     public SettingsModel() {
-        this.countUpTimer = false;
-        this.showOverlayByDefault = false;
-        this.keybinds = new ArrayList<>();
-        this.propertyChangeSupport = new PropertyChangeSupport(this);
+        this.countUpTimer.set(true);
+        this.showOverlayByDefault.set(true);
+
+        this.keybinds.setAll(
+                new Keybind("Toggle Overlay", List.of("Ctrl", "Shift", "A")),
+                new Keybind("Start/Reset Smudge Timer", List.of("Space", "Mouse 2")),
+                new Keybind("Stop Smudge Timer", List.of("Ctrl", "Space", "Mouse 2"))
+        );
     }
 
-    private void initializePropertyChangeSupport() {
-        this.propertyChangeSupport = new PropertyChangeSupport(this);
+    public boolean isCountUpTimer() {
+        return countUpTimer.get();
     }
 
-    public void setCountUpTimer(boolean feature1Enabled) {
-        boolean oldValue = this.countUpTimer;
-        this.countUpTimer = feature1Enabled;
-        propertyChangeSupport.firePropertyChange("countUpTimer", oldValue, feature1Enabled);
+    public void setCountUpTimer(boolean value) {
+        countUpTimer.set(value);
     }
 
-    public void setShowOverlayByDefault(boolean showOverlayByDefault) {
-        boolean oldValue = this.showOverlayByDefault;
-        this.showOverlayByDefault = showOverlayByDefault;
-        propertyChangeSupport.firePropertyChange("showOverlayByDefault", oldValue, showOverlayByDefault);
+    public BooleanProperty countUpTimerProperty() {
+        return countUpTimer;
     }
 
-    public List<Keybind> getKeybinds() {
-        return new ArrayList<>(keybinds); // Return a copy for immutability
+    public boolean isShowOverlayByDefault() {
+        return showOverlayByDefault.get();
     }
 
-    public void addKeybind(Keybind keybind) {
-        keybinds.add(keybind);
-        propertyChangeSupport.firePropertyChange("keybinds", null, keybinds);
+    public void setShowOverlayByDefault(boolean value) {
+        showOverlayByDefault.set(value);
     }
 
-    public void updateKeybind(int index, Keybind keybind) {
-        if (index >= 0 && index < keybinds.size()) {
-            Keybind oldKeybind = keybinds.set(index, keybind);
-            propertyChangeSupport.firePropertyChange("keybinds", oldKeybind, keybinds);
-        }
+    public BooleanProperty showOverlayByDefaultProperty() {
+        return showOverlayByDefault;
     }
 
+    public void setKeybinds(List<Keybind> newKeybinds) {
+        keybinds.setAll(newKeybinds);
+    }
+
+    /**
+     * Load from JSON file.
+     */
     public void loadFromFile(String filePath) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
-        SettingsModel loadedSettings = mapper.readValue(new File(filePath), SettingsModel.class);
-
-        setCountUpTimer(loadedSettings.countUpTimer);
-        setShowOverlayByDefault(loadedSettings.showOverlayByDefault);
-        keybinds.clear();
-        keybinds.addAll(loadedSettings.keybinds);
-
-        initializePropertyChangeSupport(); // Reinitialize PropertyChangeSupport
-        propertyChangeSupport.firePropertyChange("keybinds", null, keybinds);
+        SettingsModel loaded = mapper.readValue(new File(filePath), SettingsModel.class);
+        setCountUpTimer(loaded.isCountUpTimer());
+        setShowOverlayByDefault(loaded.isShowOverlayByDefault());
+        setKeybinds(loaded.getKeybinds());
     }
 
+    /**
+     * Save to JSON file.
+     */
     public void saveToFile(String filePath) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         mapper.writerWithDefaultPrettyPrinter().writeValue(new File(filePath), this);
-    }
-
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        propertyChangeSupport.addPropertyChangeListener(listener);
-    }
-
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        propertyChangeSupport.removePropertyChangeListener(listener);
     }
 
     @Setter

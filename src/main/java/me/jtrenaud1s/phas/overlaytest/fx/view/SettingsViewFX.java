@@ -4,12 +4,7 @@ import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.ObservableList;
 import javafx.scene.Scene;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.Tooltip;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
@@ -17,16 +12,21 @@ import javafx.stage.Stage;
 import lombok.Getter;
 import me.jtrenaud1s.phas.overlaytest.model.SettingsModel;
 
-@Getter
 public class SettingsViewFX {
+    private final Stage stage;
+
+    @Getter
     private final TableView<SettingsModel.Keybind> keybindTable;
+
+    // These are JavaFX properties for the two booleans the user can toggle.
     @Getter
     private final SimpleBooleanProperty countUpProperty = new SimpleBooleanProperty(false);
+
     @Getter
     private final SimpleBooleanProperty showOverlayProperty = new SimpleBooleanProperty(false);
+
     private final CheckBox countUpCheckBox;
     private final CheckBox showOverlayCheckBox;
-    private final Stage stage;
 
     public SettingsViewFX() {
         this.stage = new Stage();
@@ -34,40 +34,42 @@ public class SettingsViewFX {
         stage.setWidth(600);
         stage.setHeight(400);
 
-        // Layout root
         BorderPane root = new BorderPane();
         TabPane tabPane = new TabPane();
-        Tab keybindsTab = new Tab("Keybinds");
-        keybindsTab.setClosable(false);
 
         Tab generalTab = new Tab("General");
         generalTab.setClosable(false);
 
+        Tab keybindsTab = new Tab("Keybinds");
+        keybindsTab.setClosable(false);
+
         tabPane.getTabs().addAll(generalTab, keybindsTab);
+
+        // Table of keybinds
         keybindTable = new TableView<>();
         setupKeybindTable();
         keybindsTab.setContent(keybindTable);
         root.setCenter(tabPane);
 
+        // Checkboxes for general settings
         countUpCheckBox = new CheckBox("Reverse Timer");
-        countUpCheckBox.setTooltip(new Tooltip("Reverse the timer to count up instead of down."));
-        // Bind the checkbox to the property
+        countUpCheckBox.setTooltip(new Tooltip("Reverse the timer (count up) instead of down."));
+        // Bind the checkbox to the property so changes auto-update the property
         countUpCheckBox.selectedProperty().bindBidirectional(countUpProperty);
 
         showOverlayCheckBox = new CheckBox("Show Overlay by Default");
-        showOverlayCheckBox.setTooltip(new Tooltip("Show the overlay by default when the application starts."));
-        // Bind the checkbox to the property
+        showOverlayCheckBox.setTooltip(new Tooltip("Show the overlay by default at startup."));
         showOverlayCheckBox.selectedProperty().bindBidirectional(showOverlayProperty);
 
-        // For now, just put the checkbox in a VBox
         VBox generalContent = new VBox(10, countUpCheckBox, showOverlayCheckBox);
         generalContent.setPadding(new javafx.geometry.Insets(10));
         generalTab.setContent(generalContent);
 
         Scene scene = new Scene(root);
         stage.setScene(scene);
-        keybindTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
-        stage.setOnCloseRequest(t -> {
+
+        // By default, close the entire app if user closes settings
+        stage.setOnCloseRequest(evt -> {
             Platform.exit();
             System.exit(0);
         });
@@ -81,9 +83,11 @@ public class SettingsViewFX {
         chordCol.setCellValueFactory(cellData ->
                 new javafx.beans.property.SimpleStringProperty(cellData.getValue().toString())
         );
+
         keybindTable.getColumns().clear();
-        keybindTable.getColumns().add(nameCol);
-        keybindTable.getColumns().add(chordCol);
+        keybindTable.getColumns().addAll(nameCol, chordCol);
+
+        // We typically set the items from the Controller: keybindTable.setItems(model.getKeybinds());
     }
 
     public void setKeybindData(ObservableList<SettingsModel.Keybind> data) {
@@ -94,7 +98,6 @@ public class SettingsViewFX {
         stage.show();
     }
 
-    // Or a direct getter for the checkbox
     public boolean isCountUpSelected() {
         return countUpProperty.get();
     }
@@ -110,5 +113,4 @@ public class SettingsViewFX {
     public void setShowOverlaySelected(boolean value) {
         showOverlayProperty.set(value);
     }
-
 }
