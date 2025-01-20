@@ -1,62 +1,233 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+             http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>me.jtrenaud1s.phas</groupId>
-    <artifactId>OverlayTest</artifactId>
+    <artifactId>Overlay</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <jnativehook.version>2.2.2</jnativehook.version>
+        <jna.version>5.13.0</jna.version>
+        <lombok.version>1.18.34</lombok.version>
+        <jackson.version>2.15.2</jackson.version>
+        <javafx.version>22.0.1</javafx.version>
+        <logback.version>1.5.13</logback.version>
     </properties>
 
     <dependencies>
+        <!-- Dependencies omitted for brevity, same as your snippet -->
         <dependency>
             <groupId>com.github.kwhat</groupId>
             <artifactId>jnativehook</artifactId>
-            <version>2.2.2</version>
+            <version>${jnativehook.version}</version>
         </dependency>
         <dependency>
             <groupId>net.java.dev.jna</groupId>
-            <artifactId>jna-platform</artifactId>
-            <version>5.13.0</version>
+            <artifactId>jna-platform-jpms</artifactId>
+            <version>${jna.version}</version>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.5.13</version>
+            <version>${logback.version}</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.34</version>
+            <version>${lombok.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.15.2</version>
+            <version>${jackson.version}</version>
         </dependency>
 
-        <!-- JavaFX dependencies (example with Java 17+) -->
+        <!-- JavaFX dependencies -->
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-controls</artifactId>
-            <version>22.0.1</version> <!-- Check the latest version -->
+            <version>${javafx.version}</version>
         </dependency>
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-graphics</artifactId>
-            <version>22.0.1</version>
+            <version>${javafx.version}</version>
         </dependency>
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-fxml</artifactId>
-            <version>22.0.1</version>
+            <version>${javafx.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-media</artifactId>
+            <version>${javafx.version}</version>
         </dependency>
     </dependencies>
 
+    <build>
+        <plugins>
+            <!-- Use the maven-compiler-plugin to compile with Java 17 and Lombok -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.10.1</version>
+                <configuration>
+                    <source>17</source>
+                    <target>17</target>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>1.18.34</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.6.0</version>
+                <executions>
+                    <execution>
+                        <id>copy-jnativehook-jar</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>com.github.kwhat</groupId>
+                                    <artifactId>jnativehook</artifactId>
+                                    <version>${jnativehook.version}</version>
+                                    <outputDirectory>${project.build.directory}/dependencies</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Maven Antrun Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>extract-jnativehook-libraries</id>
+                        <phase>install</phase>
+                        <configuration>
+                            <target>
+                                <property name="bat.file" value="${project.build.directory}/image/bin/PhasOverlay.bat" />
+                                <mkdir dir="${project.build.directory}/image/bin/native-libs"/>
+                                <unzip src="${project.build.directory}/dependencies/jnativehook-${jnativehook.version}.jar"
+                                       dest="${project.build.directory}/image/bin/native-libs">
+                                    <patternset>
+                                        <include name="com/github/kwhat/jnativehook/lib/**"/>
+                                    </patternset>
+                                    <mapper>
+                                        <regexpmapper from="com/github/kwhat/jnativehook/lib/(.*)" to="\1"/>
+                                    </mapper>
+                                </unzip>
+                            </target>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- JavaFX Maven Plugin -->
+            <plugin>
+                <groupId>org.openjfx</groupId>
+                <artifactId>javafx-maven-plugin</artifactId>
+                <version>0.0.8</version>
+                <executions>
+                    <execution>
+                        <id>jlink-link</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jlink</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>me.jtrenaud1s.phas.overlay.Main</mainClass>
+                            <stripDebug>true</stripDebug>
+                            <compress>2</compress>
+                            <noHeaderFiles>true</noHeaderFiles>
+                            <noManPages>true</noManPages>
+                            <launcher>PhasOverlay</launcher>
+                            <options>
+                                <option>-Djnativehook.lib.locator=me.jtrenaud1s.phas.overlay.util.JLibLocator</option>
+                            </options>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>run-innosetup</id>
+                        <phase>install</phase>
+                        <configuration>
+                            <executable>ISCC.exe</executable> <!-- Path to the Inno Setup Compiler -->
+                            <arguments>
+                                <argument>${basedir}/setup.iss</argument> <!-- Path to the .iss script -->
+                            </arguments>
+                        </configuration>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>compile-launcher-resources</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <!-- 1) Run the resource compiler (rc.exe) -->
+                            <executable>rc.exe</executable>
+                            <arguments>
+                                <argument>/fo</argument>
+                                <argument>${project.build.directory}\resources.res</argument>
+                                <argument>src\main\c\resources.rc</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>compile-launcher</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>clang-cl</executable>
+                            <arguments>
+                                <argument>/Fe:${project.build.directory}\PhasOverlay.exe</argument>
+                                <argument>src\main\c\launcher.c</argument>
+                                <argument>/link</argument>
+                                <argument>/SUBSYSTEM:WINDOWS</argument>
+                                <argument>${project.build.directory}\resources.res</argument>
+                                <argument>user32.lib</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

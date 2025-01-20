@@ -1,4 +1,4 @@
-package me.jtrenaud1s.phas.overlaytest.keybind;
+package me.jtrenaud1s.phas.overlay.keybind;
 
 import com.github.kwhat.jnativehook.GlobalScreen;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
@@ -82,7 +82,7 @@ public class KeybindListener implements NativeKeyListener, NativeMouseInputListe
                     action.run();
                 }
             } else {
-                log.info("Keybind {} is on cooldown", bestMatch);
+                log.debug("Keybind {} is on cooldown", bestMatch);
             }
         }
     }

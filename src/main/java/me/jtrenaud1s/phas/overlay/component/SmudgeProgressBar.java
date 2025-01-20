@@ -1,4 +1,4 @@
-package me.jtrenaud1s.phas.overlaytest.fx.view;
+package me.jtrenaud1s.phas.overlay.component;
 
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -7,12 +7,12 @@ import javafx.scene.paint.Color;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class CustomProgressBarFX extends Region {
+public class SmudgeProgressBar extends Region {
     private final Canvas canvas;
     private int value;
     private int maxValue;
 
-    public CustomProgressBarFX(int min, int max) {
+    public SmudgeProgressBar(int min, int max) {
         this.value = min;
         this.maxValue = max;
 
@@ -43,21 +43,20 @@ public class CustomProgressBarFX extends Region {
         canvas.setHeight(h);
 
         GraphicsContext gc = canvas.getGraphicsContext2D();
+        gc.setGlobalAlpha(0.5);
         gc.clearRect(0, 0, w, h);
 
-        // background
         gc.setFill(Color.GRAY);
         gc.fillRect(0, 0, w, h);
 
-        // progress
         double fraction = (double) value / (double) maxValue;
         double progressWidth = fraction * w;
         gc.setFill(Color.WHITE);
         gc.fillRect(0, 0, progressWidth, h);
 
-        // Additional markers for "demon"/"other" if desired:
-        double demonMark = ((180.0 - 60.0) / (double) maxValue) * w;
+        double demonMark = ((120.0) / (double) maxValue) * w;
         double otherMark = (90.0 / (double) maxValue) * w;
+        gc.setGlobalAlpha(1);
         gc.setStroke(Color.BLACK);
         gc.strokeLine(demonMark, 0, demonMark, h);
         gc.strokeLine(otherMark, 0, otherMark, h);

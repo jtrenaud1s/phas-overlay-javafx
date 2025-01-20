@@ -1,4 +1,4 @@
-package me.jtrenaud1s.phas.overlaytest.keybind;
+package me.jtrenaud1s.phas.overlay.keybind;
 
 import com.github.kwhat.jnativehook.GlobalScreen;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;

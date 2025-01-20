@@ -1,7 +1,7 @@
 import os
 import pathspec
 
-def load_gitignore(gitignore_path=".gitignore"):
+def load_gitignore(gitignore_path=".contextignore"):
     with open(gitignore_path, 'r') as file:
         gitignore = file.read()
     return pathspec.PathSpec.from_lines('gitwildmatch', gitignore.splitlines())
