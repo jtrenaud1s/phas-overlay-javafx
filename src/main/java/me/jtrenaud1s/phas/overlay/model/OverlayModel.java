@@ -13,5 +13,5 @@ import lombok.Getter;
 public class OverlayModel {
     private final BooleanProperty overlayVisible = new SimpleBooleanProperty(false);
     private final BooleanProperty crosshairEnabled = new SimpleBooleanProperty(false);
-    private final DoubleProperty smudgeVolume = new SimpleDoubleProperty(1.0D);
+    private final DoubleProperty smudgeVolume = new SimpleDoubleProperty(100.0D);
 }

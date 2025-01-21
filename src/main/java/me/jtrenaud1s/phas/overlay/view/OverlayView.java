@@ -1,5 +1,7 @@
 package me.jtrenaud1s.phas.overlay.view;
 
+import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
@@ -13,91 +15,91 @@ import lombok.extern.slf4j.Slf4j;
 import me.jtrenaud1s.phas.overlay.component.SmudgeTimerPane;
 import me.jtrenaud1s.phas.overlay.util.WindowUtil;
 
+import java.net.URL;
+import java.util.ResourceBundle;
+
 @Slf4j
 @Getter
-public class OverlayView {
-    private final Stage stage;
-    @Getter
-    private final SmudgeTimerPane smudgeTimerPane;
-    private final Circle crosshairDot;
+public class OverlayView implements Initializable {
 
-    public OverlayView() {
-        // 1) Create an invisible "owner" stage so the overlay won't have a taskbar icon.
-        Stage ownerStage = new Stage(StageStyle.UTILITY);
+    @FXML private Pane root;                // The FXML root Pane
+    @FXML private SmudgeTimerPane smudgeTimerPane;
+    @FXML private Circle crosshairDot;
+
+    private Stage stage;                   // The overlay stage
+    private Stage ownerStage;              // The invisible owner stage
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        initOverlay();
+    }
+
+    /**
+     * Call this after loading FXML to set up the stage with your overlay logic.
+     */
+    public void initOverlay() {
+        this.stage = new Stage();
+
+        ownerStage = new Stage(StageStyle.UTILITY);
         ownerStage.setOpacity(0);
         ownerStage.setWidth(1);
         ownerStage.setHeight(1);
-        // Move it off-screen (optional, but keeps it completely hidden from view)
         ownerStage.setX(-10000);
         ownerStage.setY(-10000);
         ownerStage.show();
 
-        // 2) Create the transparent overlay stage, owned by the invisible stage.
-        this.stage = new Stage(StageStyle.TRANSPARENT);
         this.stage.initOwner(ownerStage);
+        this.stage.initStyle(StageStyle.TRANSPARENT);
         this.stage.initModality(Modality.NONE);
-        stage.setTitle("Phasmophobia Overlay");
-        stage.setAlwaysOnTop(true);
+        this.stage.setTitle("Phasmophobia Overlay");
+        this.stage.setAlwaysOnTop(true);
 
-        // Custom WindowUtil logic (unchanged)
-        WindowUtil.timingDispatcher(stage);
-
-        // 3) Match the screen size so it covers the entire monitor.
         double width = Screen.getPrimary().getBounds().getWidth();
         double height = Screen.getPrimary().getBounds().getHeight();
 
-        stage.setX(0);
-        stage.setY(0);
-        stage.setWidth(width);
-        stage.setHeight(height);
-
-        // 4) Create a root pane/scene with transparent fill.
-        Pane root = new Pane();
-        root.setPrefSize(width, height);
-        root.setBackground(null);
         Scene scene = new Scene(root, width, height, Color.TRANSPARENT);
-        stage.setScene(scene);
+        this.stage.setScene(scene);
+        root.setPrefSize(width, height);
 
-        // 5) Add a small crosshair dot in the center (invisible by default).
-        crosshairDot = new Circle(3);
-        crosshairDot.setFill(Color.LIMEGREEN);
-        crosshairDot.setLayoutX(width / 2.0);
-        crosshairDot.setLayoutY(height / 2.0);
-        crosshairDot.setVisible(false);
+        crosshairDot.setCenterX(width / 2.0);
+        crosshairDot.setCenterY(height / 2.0);
 
-        // 6) Your custom SmudgeTimerPane.
-        smudgeTimerPane = new SmudgeTimerPane();
-
-        // 7) Add both to the root.
-        root.getChildren().add(smudgeTimerPane);
-        root.getChildren().add(crosshairDot);
-
-        // Initially hidden; showOverlay() below will reveal it.
-        stage.hide();
+        WindowUtil.resizeOverlayToPhasmophobia(this.stage);
+        this.stage.hide();
+        WindowUtil.makeMouseTransparent(this.stage);
     }
 
     public void showOverlay() {
-        stage.show();
-        // Makes the overlay non-interactive with mouse by default (if desired).
-        WindowUtil.makeMouseTransparent(stage);
+        if (stage != null) {
+            stage.show();
+            WindowUtil.makeMouseTransparent(stage);
+        }
     }
 
     public void hideOverlay() {
-        stage.hide();
+        if (stage != null) {
+            stage.hide();
+        }
     }
 
     public void setCrosshairVisible(boolean visible) {
-        crosshairDot.setVisible(visible);
+        if (crosshairDot != null) {
+            crosshairDot.setVisible(visible);
+        }
     }
 
     public void setSmudgeVolume(double volume) {
-        smudgeTimerPane.setVolume(volume);
+        if (smudgeTimerPane != null) {
+            smudgeTimerPane.setVolume(volume);
+        }
     }
 
     /**
      * Reposition/rescale the timer pane.
      */
     public void updateTimerPaneLayout(double scale) {
+        if (smudgeTimerPane == null) return;
+
         double timerWidth = smudgeTimerPane.getLayoutBounds().getWidth();
         double timerHeight = smudgeTimerPane.getLayoutBounds().getHeight();
         double screenWidth = Screen.getPrimary().getBounds().getWidth();
@@ -112,9 +114,7 @@ public class OverlayView {
 
         smudgeTimerPane.setScaleX(scale);
         smudgeTimerPane.setScaleY(scale);
-        smudgeTimerPane.setLayoutX(
-                screenWidth - scaledWidth - marginRight + (extraWidth / 2)
-        );
+        smudgeTimerPane.setLayoutX(screenWidth - scaledWidth - marginRight + (extraWidth / 2));
         smudgeTimerPane.setLayoutY(marginTop + (extraHeight / 2));
     }
 }

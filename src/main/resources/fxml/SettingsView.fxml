@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.*?>
+
+<!--
+  A BorderPane as the root, with a TabPane in the center.
+  - General Tab -> ScrollPane -> VBox of TitledPanes
+  - Keybinds Tab -> TableView
+-->
+
+<BorderPane fx:id="root" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="me.jtrenaud1s.phas.overlay.view.SettingsView"
+            prefWidth="600" prefHeight="500">
+
+    <!-- Center: the TabPane -->
+    <center>
+        <TabPane fx:id="tabPane">
+
+            <!-- General Tab -->
+            <Tab fx:id="generalTab" text="General" closable="false">
+                <ScrollPane fx:id="generalScrollPane" fitToWidth="true">
+                    <VBox fx:id="generalVBox">
+                        <!-- Set padding/spacings as child elements -->
+                        <padding>
+                            <Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/>
+                        </padding>
+                        <spacing>10.0</spacing>
+
+                        <!-- Timer Settings TitledPane -->
+                        <TitledPane text="Timer Settings" collapsible="false">
+                            <VBox>
+                                <padding>
+                                    <Insets top="5.0" right="5.0" bottom="5.0" left="5.0"/>
+                                </padding>
+                                <spacing>5.0</spacing>
+
+                                <CheckBox fx:id="countUpCheckBox" text="Reverse Timer"/>
+                                <spacing>5.0</spacing>
+                                <Label text="Smudge Timer Volume"/>
+                                <Slider fx:id="smudgeVolumeSlider"
+                                        min="0.0" max="100.0"
+                                        showTickMarks="true" showTickLabels="true"
+                                        blockIncrement="5"/>
+                            </VBox>
+                        </TitledPane>
+
+                        <!-- Overlay Settings TitledPane -->
+                        <TitledPane text="Overlay Settings" collapsible="false">
+                            <VBox>
+                                <padding>
+                                    <Insets top="5.0" right="5.0" bottom="5.0" left="5.0"/>
+                                </padding>
+                                <spacing>5.0</spacing>
+
+                                <CheckBox fx:id="showOverlayCheckBox" text="Show Overlay by Default"/>
+                                <CheckBox fx:id="crosshairCheckBox" text="Enable Crosshair"/>
+                                <Button fx:id="resetOverlayButton" text="Reset Overlay Position"/>
+                            </VBox>
+                        </TitledPane>
+
+                        <!-- Application Settings TitledPane -->
+                        <TitledPane text="Application Settings" collapsible="false">
+                            <VBox>
+                                <padding>
+                                    <Insets top="5.0" right="5.0" bottom="5.0" left="5.0"/>
+                                </padding>
+                                <spacing>5.0</spacing>
+
+                                <CheckBox fx:id="settingsHiddenCheckBox" text="Hide Settings By Default"/>
+                            </VBox>
+                        </TitledPane>
+
+                    </VBox>
+                </ScrollPane>
+            </Tab>
+
+            <!-- Keybinds Tab -->
+            <Tab fx:id="keybindsTab" text="Keybinds" closable="false">
+                <TableView fx:id="keybindTable">
+                    <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS"/></columnResizePolicy>
+                    <columns>
+                        <!-- We declare columns; they will be bound in the controller -->
+                        <TableColumn fx:id="nameCol" text="Action"/>
+                        <TableColumn fx:id="chordCol" text="Keybind"/>
+                    </columns>
+                </TableView>
+            </Tab>
+        </TabPane>
+    </center>
+</BorderPane>

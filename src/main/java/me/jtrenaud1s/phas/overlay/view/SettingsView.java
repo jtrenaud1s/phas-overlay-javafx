@@ -1,137 +1,134 @@
 package me.jtrenaud1s.phas.overlay.view;
 
 import javafx.application.Platform;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import lombok.Getter;
 import me.jtrenaud1s.phas.overlay.model.Keybind;
 import me.jtrenaud1s.phas.overlay.util.WindowUtil;
 
+import java.net.URL;
 import java.util.Objects;
+import java.util.ResourceBundle;
 
 @Getter
-public class SettingsView {
-    private final Stage stage;
-    private final TableView<Keybind> keybindTable;
+public class SettingsView implements Initializable {
 
-    private final CheckBox countUpCheckBox;
-    private final CheckBox showOverlayCheckBox;
-    private final CheckBox crosshairCheckBox;
-    private final CheckBox settingsHiddenCheckBox;
+    // -- Fields linked to FXML nodes ----------------------------------
+    @FXML private BorderPane root;
 
-    private final Slider smudgeVolumeSlider;
+    // Tabs and Panes
+    @FXML private TabPane tabPane;
+    @FXML private Tab generalTab;
+    @FXML private Tab keybindsTab;
+    @FXML private ScrollPane generalScrollPane;
 
-    public SettingsView() {
-        this.stage = new Stage();
-        stage.setTitle("Settings");
-        stage.setWidth(600);
-        stage.setHeight(400);
+    // Keybinds Table
+    @FXML private TableView<Keybind> keybindTable;
+    @FXML private TableColumn<Keybind, String> nameCol;
+    @FXML private TableColumn<Keybind, String> chordCol;
 
-        stage.getIcons().add(new Image(Objects.requireNonNull(
-                SettingsView.class.getResourceAsStream("/images/PhasOverlay.png"))));
+    // CheckBoxes
+    @FXML private CheckBox countUpCheckBox;
+    @FXML private CheckBox showOverlayCheckBox;
+    @FXML private CheckBox crosshairCheckBox;
+    @FXML private CheckBox settingsHiddenCheckBox;
 
-        WindowUtil.timingDispatcher(stage);
+    // Slider
+    @FXML private Slider smudgeVolumeSlider;
 
-        BorderPane root = new BorderPane();
-        TabPane tabPane = new TabPane();
+    // Button
+    @FXML private Button resetOverlayButton;
 
-        Tab generalTab = new Tab("General");
-        generalTab.setClosable(false);
+    // -- Non-FXML fields ---------------------------------------------
+    private Stage stage;  // We’ll store a reference to the stage here.
 
-        Tab keybindsTab = new Tab("Keybinds");
-        keybindsTab.setClosable(false);
+    /**
+     * Called by the FXML loader when initialization is complete.
+     * We can set up table columns, tooltips, etc. here.
+     */
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        // Setup table columns
+        nameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
+        chordCol.setCellValueFactory(
+                cellData -> new SimpleStringProperty(cellData.getValue().toString())
+        );
 
-        tabPane.getTabs().addAll(generalTab, keybindsTab);
-
-        keybindTable = new TableView<>();
-        setupKeybindTable();
-        keybindsTab.setContent(keybindTable);
-        // Constrain columns so no extra filler column appears
-        keybindTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
-
-        root.setCenter(tabPane);
-
-        countUpCheckBox = new CheckBox("Reverse Timer");
-        showOverlayCheckBox = new CheckBox("Show Overlay by Default");
-        crosshairCheckBox = new CheckBox("Enable Crosshair");
-        settingsHiddenCheckBox = new CheckBox("Hide Settings By Default");
-
+        // Setup tooltips
         countUpCheckBox.setTooltip(new Tooltip("Reverse the timer (count up) instead of down."));
         showOverlayCheckBox.setTooltip(new Tooltip("Show the overlay by default at startup."));
         crosshairCheckBox.setTooltip(new Tooltip("Show or hide a crosshair in the center of the screen."));
         settingsHiddenCheckBox.setTooltip(new Tooltip("Hide the settings window by default at startup."));
+        resetOverlayButton.setTooltip(new Tooltip("Resize and move overlay to match Phasmophobia's window."));
 
-        smudgeVolumeSlider = new Slider(0.0, 1.0, 1.0);
-        smudgeVolumeSlider.setShowTickMarks(true);
-        smudgeVolumeSlider.setShowTickLabels(true);
-        smudgeVolumeSlider.setBlockIncrement(0.1);
-
-        Label volumeLabel = new Label("Smudge Timer Volume");
-
-        VBox timerSettingsBox = new VBox(5, countUpCheckBox, volumeLabel, smudgeVolumeSlider);
-        TitledPane timerPane = new TitledPane("Timer Settings", timerSettingsBox);
-        timerPane.setCollapsible(false);
-
-        VBox overlaySettingsBox = new VBox(5, showOverlayCheckBox, crosshairCheckBox);
-        TitledPane overlayPane = new TitledPane("Overlay Settings", overlaySettingsBox);
-        overlayPane.setCollapsible(false);
-
-        VBox appSettingsBox = new VBox(5, settingsHiddenCheckBox);
-        TitledPane appPane = new TitledPane("Application Settings", appSettingsBox);
-        appPane.setCollapsible(false);
-
-        VBox generalContent = new VBox(10, timerPane, overlayPane, appPane);
-        generalContent.setPadding(new javafx.geometry.Insets(10));
-        generalTab.setContent(generalContent);
-
-        Scene scene = new Scene(root);
-        stage.setScene(scene);
-
+        // Prevent close => hide window
         Platform.setImplicitExit(false);
+    }
+
+    /**
+     * This method should be called once after the FXML is loaded.
+     * It sets up the stage with the relevant properties, icons, etc.
+     */
+    public void setStage(Stage stage) {
+        this.stage = stage;
+
+        this.stage.setTitle("Settings");
+        this.stage.setWidth(600);
+        this.stage.setHeight(500);
+
+        // Load icon
+        this.stage.getIcons().add(new Image(Objects.requireNonNull(
+                getClass().getResourceAsStream("/images/PhasOverlay.png"))));
+
+        // Additional logic
+        WindowUtil.timingDispatcher(this.stage);
+        this.stage.setAlwaysOnTop(true);
 
         // Hide rather than exit if user closes the settings
-        stage.setOnCloseRequest(event -> {
+        this.stage.setOnCloseRequest(event -> {
             event.consume();
-            stage.hide();
+            this.stage.hide();
         });
 
         // Hide if minimized
-        stage.iconifiedProperty().addListener((obs, wasIconified, isIconified) -> {
+        this.stage.iconifiedProperty().addListener((obs, wasIconified, isIconified) -> {
             if (isIconified) {
-                stage.hide();
+                this.stage.hide();
             }
         });
     }
 
-    private void setupKeybindTable() {
-        TableColumn<Keybind, String> nameCol = new TableColumn<>("Action");
-        nameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
-
-        TableColumn<Keybind, String> chordCol = new TableColumn<>("Keybind");
-        chordCol.setCellValueFactory(cellData ->
-                new javafx.beans.property.SimpleStringProperty(cellData.getValue().toString())
-        );
-
-        keybindTable.getColumns().clear();
-        keybindTable.getColumns().add(nameCol);
-        keybindTable.getColumns().add(chordCol);
-    }
-
+    /**
+     * Show the stage on screen.
+     */
     public void showStage() {
-        stage.show();
-        stage.toFront();
+        if (stage != null) {
+            stage.centerOnScreen();
+            stage.show();
+            WindowUtil.forceFocus(stage);
+        }
     }
 
+    /**
+     * Toggle stage visibility.
+     */
     public void toggleStage() {
-        if (stage.isShowing()) {
-            stage.hide();
-        } else {
-            showStage();
+        if (stage != null) {
+            stage.setWidth(600);
+            stage.setHeight(500);
+            if (stage.isShowing()) {
+                stage.hide();
+            } else {
+                showStage();
+            }
         }
     }
 }

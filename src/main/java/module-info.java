@@ -17,6 +17,7 @@ module PhasOverlay {
     opens me.jtrenaud1s.phas.overlay.model to com.fasterxml.jackson.databind;
 
     exports me.jtrenaud1s.phas.overlay;
+    exports me.jtrenaud1s.phas.overlay.keybind;
     opens me.jtrenaud1s.phas.overlay.view to javafx.fxml;
     opens me.jtrenaud1s.phas.overlay.component to javafx.fxml;
 

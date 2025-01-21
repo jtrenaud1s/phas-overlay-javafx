@@ -12,6 +12,10 @@ public class SmudgeProgressBar extends Region {
     private int value;
     private int maxValue;
 
+    public SmudgeProgressBar() {
+        this(0, 180);
+    }
+
     public SmudgeProgressBar(int min, int max) {
         this.value = min;
         this.maxValue = max;

@@ -122,6 +122,7 @@ public class SettingsModel {
         setShowOverlayByDefault(loaded.isShowOverlayByDefault());
         setCrosshairEnabled(loaded.isCrosshairEnabled());
         setSettingsHidden(loaded.isSettingsHidden());
+        setSmudgeVolume(loaded.getSmudgeVolume());
 
         // Keep or merge keybinds
         for (Keybind defaultKeybind : keybinds) {

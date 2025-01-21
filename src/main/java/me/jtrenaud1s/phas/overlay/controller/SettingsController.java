@@ -2,6 +2,7 @@ package me.jtrenaud1s.phas.overlay.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import me.jtrenaud1s.phas.overlay.model.Keybind;
+import me.jtrenaud1s.phas.overlay.util.WindowUtil;
 import me.jtrenaud1s.phas.overlay.view.SettingsView;
 import me.jtrenaud1s.phas.overlay.keybind.KeybindListener;
 import me.jtrenaud1s.phas.overlay.keybind.KeybindRecorder;
@@ -20,20 +21,20 @@ public final class SettingsController {
     private final SettingsView view;
     private final KeybindRecorder keybindRecorder;
     private final KeybindListener keybindListener;
-    private final OverlayModel overlayModel;
+    private final OverlayController overlayController;
 
     private final Path settingsFilePath;
 
     public SettingsController(
             SettingsModel model,
             SettingsView view,
-            OverlayModel overlayModel,
+            OverlayController overlayController,
             KeybindRecorder keybindRecorder,
             KeybindListener keybindListener
     ) {
         this.model = model;
         this.view = view;
-        this.overlayModel = overlayModel;
+        this.overlayController = overlayController;
         this.keybindRecorder = keybindRecorder;
         this.keybindListener = keybindListener;
 
@@ -47,13 +48,22 @@ public final class SettingsController {
         setupKeybindEditor();
         registerKeybindsToListener();
 
-        overlayModel.getOverlayVisible().set(model.isShowOverlayByDefault());
-        overlayModel.getCrosshairEnabled().set(model.isCrosshairEnabled());
-        overlayModel.getSmudgeVolume().set(model.getSmudgeVolume());
+        overlayController.getOverlayModel().getOverlayVisible().set(model.isShowOverlayByDefault());
+        overlayController.getOverlayModel().getCrosshairEnabled().set(model.isCrosshairEnabled());
+        overlayController.getOverlayModel().getSmudgeVolume().set(model.getSmudgeVolume());
+
+        view.getStage().initOwner(overlayController.getOverlayView().getStage());
 
         if (!model.getSettingsHidden().get()) {
             view.showStage();
         }
+        setupResetOverlayButton();
+    }
+
+    private void setupResetOverlayButton() {
+        view.getResetOverlayButton().setOnAction(evt -> {
+            WindowUtil.resizeOverlayToPhasmophobia(overlayController.getOverlayView().getStage());
+        });
     }
 
     private void initializeViewBindings() {
@@ -69,23 +79,21 @@ public final class SettingsController {
                 .bindBidirectional(model.smudgeVolumeProperty());
 
         model.getCrosshairEnabled().addListener((obs, oldVal, newVal) -> {
-            overlayModel.getCrosshairEnabled().set(newVal);
+            overlayController.getOverlayModel().getCrosshairEnabled().set(newVal);
             saveSettings();
         });
 
         model.getShowOverlayByDefault().addListener((obs, oldVal, newVal) -> {
-            overlayModel.getOverlayVisible().set(newVal);
+            overlayController.getOverlayModel().getOverlayVisible().set(newVal);
             saveSettings();
         });
 
         model.smudgeVolumeProperty().addListener((obs, oldVal, newVal) -> {
-            overlayModel.getSmudgeVolume().set(newVal.doubleValue());
+            overlayController.getOverlayModel().getSmudgeVolume().set(newVal.doubleValue());
             saveSettings();
         });
 
-        model.getSettingsHidden().addListener((obs, oldVal, newVal) -> {
-            saveSettings();
-        });
+        model.getSettingsHidden().addListener((obs, oldVal, newVal) -> saveSettings());
     }
 
     private void setupKeybindEditor() {

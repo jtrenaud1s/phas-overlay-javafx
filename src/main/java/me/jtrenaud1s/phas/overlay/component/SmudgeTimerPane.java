@@ -92,7 +92,7 @@ public class SmudgeTimerPane extends VBox {
     }
 
     public void setVolume(double volume) {
-        cueSound.setVolume(volume);  // Range 0.0 - 1.0
+        cueSound.setVolume(volume / 100D);  // Range 0.0 - 1.0
     }
 
     /**
