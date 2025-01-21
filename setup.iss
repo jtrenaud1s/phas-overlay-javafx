@@ -10,6 +10,7 @@ SolidCompression=yes
 Uninstallable=yes
 WizardStyle=modern
 UninstallDisplayIcon={app}\PhasOverlay.exe
+DisableWelcomePage=no
 
 [Files]
 Source: "target\image\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs

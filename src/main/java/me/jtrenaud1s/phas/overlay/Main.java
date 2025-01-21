@@ -64,9 +64,9 @@ public class Main extends Application {
             Platform.runLater(() -> overlayModel.getCrosshairEnabled().set(!currentlyEnabled));
         });
 
-        keybindListener.registerAction("Quit", Platform::exit);
-        settingsView.showStage();
+        keybindListener.registerAction("Toggle Settings", () -> Platform.runLater(settingsView::toggleStage));
 
+        keybindListener.registerAction("Quit", Platform::exit);
     }
 
     //shutdown hook

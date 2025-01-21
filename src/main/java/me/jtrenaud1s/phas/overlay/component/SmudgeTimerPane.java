@@ -91,6 +91,10 @@ public class SmudgeTimerPane extends VBox {
         resetTimer(TIMER_SPIRIT);
     }
 
+    public void setVolume(double volume) {
+        cueSound.setVolume(volume);  // Range 0.0 - 1.0
+    }
+
     /**
      * Reset the timer to a certain duration and start counting down immediately.
      */
@@ -113,11 +117,7 @@ public class SmudgeTimerPane extends VBox {
         scheduledFuture = scheduler.scheduleAtFixedRate(() -> {
             if (remainingTime > 0) {
                 remainingTime--;
-                long start = System.currentTimeMillis();
-                // Update UI on the JavaFX Application Thread
                 Platform.runLater(() -> {
-                    long end = System.currentTimeMillis();
-                    log.debug("UI update took {} ms", end - start);
                     progressBar.setValue(remainingTime);
                     updateTimeDisplay();
                     updateGhostLabel();
@@ -125,7 +125,6 @@ public class SmudgeTimerPane extends VBox {
                 });
 
             } else {
-                // Time is up—stop the timer
                 stopTimer();
             }
         }, 0, 1, TimeUnit.SECONDS);
@@ -135,8 +134,6 @@ public class SmudgeTimerPane extends VBox {
      * Plays the countdown cue sound at specific times.
      */
     private void checkAudioCue() {
-        // If you want to handle playing the cue on the background thread or JavaFX thread,
-        // it is generally okay to do so here. But if you see concurrency issues, wrap it in Platform.runLater.
         if (remainingTime == 5 || remainingTime == 95 || remainingTime == 125) {
             cueSound.play();
         }
@@ -146,16 +143,13 @@ public class SmudgeTimerPane extends VBox {
      * Stops the timer and resets everything.
      */
     public void stopTimer() {
-        // Cancel the scheduled task
         cancelScheduledTask();
 
-        // Update the UI state
         isRunning = false;
         statusIndicator.setFill(Color.RED);
         remainingTime = TIMER_SPIRIT;
         cueSound.stop();
 
-        // Ensure UI updates happen on the JavaFX thread
         Platform.runLater(() -> {
             updateGhostLabel();
             updateTimeDisplay();

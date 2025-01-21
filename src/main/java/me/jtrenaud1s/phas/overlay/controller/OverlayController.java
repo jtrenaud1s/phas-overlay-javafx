@@ -27,10 +27,13 @@ public final class OverlayController {
             }
         });
 
-        // NEW: crosshair listener
         overlayModel.getCrosshairEnabled().addListener((obs, oldVal, newVal) -> {
             overlayView.setCrosshairVisible(newVal);
             log.info("Crosshair is now {}", newVal ? "ON" : "OFF");
+        });
+
+        overlayModel.getSmudgeVolume().addListener((obs, oldVal, newVal) -> {
+            overlayView.setSmudgeVolume(newVal.doubleValue());
         });
 
         overlayView.updateTimerPaneLayout(SCALE);

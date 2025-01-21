@@ -20,10 +20,7 @@ public final class SettingsController {
     private final SettingsView view;
     private final KeybindRecorder keybindRecorder;
     private final KeybindListener keybindListener;
-
     private final OverlayModel overlayModel;
-    // Instead of referencing the overlay view or controller directly,
-    // we store only the model for minimal coupling. The main code can pass this in.
 
     private final Path settingsFilePath;
 
@@ -40,44 +37,64 @@ public final class SettingsController {
         this.keybindRecorder = keybindRecorder;
         this.keybindListener = keybindListener;
 
+        // The path to our user settings file
         this.settingsFilePath = getUserAppDirectory().resolve("settings.json");
         createUserAppDirectoryIfNotExists();
 
         loadSettings();
-
+        view.getKeybindTable().setItems(model.getKeybinds());
         initializeViewBindings();
-        updateKeybindTable();
-        setupListeners();
+        setupKeybindEditor();
+        registerKeybindsToListener();
 
         overlayModel.getOverlayVisible().set(model.isShowOverlayByDefault());
         overlayModel.getCrosshairEnabled().set(model.isCrosshairEnabled());
+        overlayModel.getSmudgeVolume().set(model.getSmudgeVolume());
+
+        if (!model.getSettingsHidden().get()) {
+            view.showStage();
+        }
     }
 
     private void initializeViewBindings() {
-        view.getCountUpProperty().bindBidirectional(model.getCountUpTimer());
-        view.getShowOverlayProperty().bindBidirectional(model.getShowOverlayByDefault());
+        view.getCountUpCheckBox().selectedProperty()
+                .bindBidirectional(model.getCountUpTimer());
+        view.getShowOverlayCheckBox().selectedProperty()
+                .bindBidirectional(model.getShowOverlayByDefault());
+        view.getCrosshairCheckBox().selectedProperty()
+                .bindBidirectional(model.getCrosshairEnabled());
+        view.getSettingsHiddenCheckBox().selectedProperty()
+                .bindBidirectional(model.getSettingsHidden());
+        view.getSmudgeVolumeSlider().valueProperty()
+                .bindBidirectional(model.smudgeVolumeProperty());
+
+        model.getCrosshairEnabled().addListener((obs, oldVal, newVal) -> {
+            overlayModel.getCrosshairEnabled().set(newVal);
+            saveSettings();
+        });
 
         model.getShowOverlayByDefault().addListener((obs, oldVal, newVal) -> {
             overlayModel.getOverlayVisible().set(newVal);
+            saveSettings();
         });
 
-        view.getCrosshairProperty().set(model.isCrosshairEnabled());
-        view.getCrosshairProperty().addListener((obs, oldVal, newVal) -> {
-            model.setCrosshairEnabled(newVal);
-            overlayModel.getCrosshairEnabled().set(newVal);
+        model.smudgeVolumeProperty().addListener((obs, oldVal, newVal) -> {
+            overlayModel.getSmudgeVolume().set(newVal.doubleValue());
+            saveSettings();
+        });
+
+        model.getSettingsHidden().addListener((obs, oldVal, newVal) -> {
             saveSettings();
         });
     }
 
-    private void setupListeners() {
+    private void setupKeybindEditor() {
         view.getKeybindTable().setOnMouseClicked(evt -> {
             if (evt.getClickCount() == 2 && !view.getKeybindTable().getSelectionModel().isEmpty()) {
                 int rowIndex = view.getKeybindTable().getSelectionModel().getSelectedIndex();
                 startKeybindRecording(rowIndex);
             }
         });
-
-        registerKeybindsToListener();
     }
 
     private void startKeybindRecording(int rowIndex) {
@@ -85,7 +102,6 @@ public final class SettingsController {
 
         Keybind keybind = model.getKeybinds().get(rowIndex);
         keybind.setKeys(List.of("Recording..."));
-
         view.getKeybindTable().refresh();
 
         keybindRecorder.startRecording(recordedChord -> {
@@ -101,16 +117,11 @@ public final class SettingsController {
 
     private void registerKeybindsToListener() {
         keybindListener.clearKeybinds();
-
         for (Keybind keybind : model.getKeybinds()) {
             log.info("Associating keybind: {} -> {}", keybind.getKeys(), keybind.getName());
             Set<String> keybindSet = Set.copyOf(keybind.getKeys());
             keybindListener.associateKeybind(keybindSet, keybind.getName());
         }
-    }
-
-    private void updateKeybindTable() {
-        view.getKeybindTable().setItems(model.getKeybinds());
     }
 
     private void loadSettings() {
@@ -131,7 +142,6 @@ public final class SettingsController {
         }
     }
 
-
     private Path getUserAppDirectory() {
         String userHome = System.getProperty("user.home");
         String appDir;
@@ -139,11 +149,10 @@ public final class SettingsController {
         if (isWindows()) {
             appDir = System.getenv("APPDATA"); // e.g., C:\Users\<User>\AppData\Roaming
         } else if (isMac()) {
-            appDir = userHome + "/Library/Application Support"; // e.g., /Users/<User>/Library/Application Support
+            appDir = userHome + "/Library/Application Support";
         } else {
-            appDir = userHome + "/.config"; // e.g., /home/<User>/.config
+            appDir = userHome + "/.config";
         }
-
         return Path.of(appDir, "PhasOverlay");
     }
 

@@ -128,7 +128,6 @@
                         <phase>install</phase>
                         <configuration>
                             <target>
-                                <property name="bat.file" value="${project.build.directory}/image/bin/PhasOverlay.bat" />
                                 <mkdir dir="${project.build.directory}/image/bin/native-libs"/>
                                 <unzip src="${project.build.directory}/dependencies/jnativehook-${jnativehook.version}.jar"
                                        dest="${project.build.directory}/image/bin/native-libs">
