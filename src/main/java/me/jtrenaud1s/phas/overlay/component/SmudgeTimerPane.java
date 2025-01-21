@@ -36,7 +36,6 @@ public class SmudgeTimerPane extends VBox {
     private ScheduledFuture<?> scheduledFuture;
 
     private int remainingTime;
-    private boolean isRunning;
     private boolean countUp;
 
     public SmudgeTimerPane() {
@@ -103,7 +102,6 @@ public class SmudgeTimerPane extends VBox {
         cancelScheduledTask();
 
         remainingTime = timerDuration;
-        isRunning = true;
         statusIndicator.setFill(Color.GREEN);
         updateGhostLabel();
         updateTimeDisplay();
@@ -145,7 +143,6 @@ public class SmudgeTimerPane extends VBox {
     public void stopTimer() {
         cancelScheduledTask();
 
-        isRunning = false;
         statusIndicator.setFill(Color.RED);
         remainingTime = TIMER_SPIRIT;
         cueSound.stop();
