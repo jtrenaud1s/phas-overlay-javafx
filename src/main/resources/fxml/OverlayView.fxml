@@ -12,16 +12,9 @@
       fx:controller="me.jtrenaud1s.phas.overlay.view.OverlayView"
       style="-fx-background-color: transparent;">
 
-    <!-- Child nodes -->
-    <children>
-
-        <!-- The custom control -->
-        <SmudgeTimerPane fx:id="smudgeTimerPane" />
-
-        <!-- A small crosshair dot in the center (visibility controlled in code) -->
-        <Circle fx:id="crosshairDot"
-                fill="LIMEGREEN"
-                radius="3"
-                visible="false" />
-    </children>
+    <SmudgeTimerPane fx:id="smudgeTimerPane"/>
+    <Circle fx:id="crosshairDot"
+            fill="LIMEGREEN"
+            radius="3"
+            visible="false"/>
 </Pane>

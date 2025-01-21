@@ -60,7 +60,7 @@ public class Main extends Application {
 
         // 5) Instantiate domain-level controllers
         overlayController = new OverlayController(overlayModel, overlayView);
-        SettingsController settingsController = new SettingsController(
+        new SettingsController(
                 settingsModel,
                 settingsView,
                 overlayController,
@@ -144,10 +144,7 @@ public class Main extends Application {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/OverlayView.fxml"));
             loader.load();
-
             overlayView = loader.getController();
-
-
             return true;
         } catch (Exception e) {
             log.error("Failed to load OverlayView.fxml", e);

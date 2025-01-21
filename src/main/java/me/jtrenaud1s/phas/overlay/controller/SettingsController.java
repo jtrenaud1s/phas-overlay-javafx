@@ -7,7 +7,6 @@ import me.jtrenaud1s.phas.overlay.view.SettingsView;
 import me.jtrenaud1s.phas.overlay.keybind.KeybindListener;
 import me.jtrenaud1s.phas.overlay.keybind.KeybindRecorder;
 import me.jtrenaud1s.phas.overlay.model.SettingsModel;
-import me.jtrenaud1s.phas.overlay.model.OverlayModel;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -61,9 +60,8 @@ public final class SettingsController {
     }
 
     private void setupResetOverlayButton() {
-        view.getResetOverlayButton().setOnAction(evt -> {
-            WindowUtil.resizeOverlayToPhasmophobia(overlayController.getOverlayView().getStage());
-        });
+        view.getResetOverlayButton().setOnAction(evt ->
+                WindowUtil.resizeOverlayToPhasmophobia(overlayController.getOverlayView().getStage()));
     }
 
     private void initializeViewBindings() {

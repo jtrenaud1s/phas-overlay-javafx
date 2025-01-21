@@ -192,10 +192,6 @@ public class SmudgeTimerPane extends VBox {
         }
     }
 
-    public boolean isTimerRunning() {
-        return isRunning;
-    }
-
     /**
      * Optionally call this when the pane is no longer needed.
      */

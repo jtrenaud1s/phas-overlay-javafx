@@ -20,7 +20,7 @@
             <!-- General Tab -->
             <Tab fx:id="generalTab" text="General" closable="false">
                 <ScrollPane fx:id="generalScrollPane" fitToWidth="true">
-                    <VBox fx:id="generalVBox">
+                    <VBox>
                         <!-- Set padding/spacings as child elements -->
                         <padding>
                             <Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/>
@@ -39,7 +39,6 @@
                                 <spacing>5.0</spacing>
                                 <Label text="Smudge Timer Volume"/>
                                 <Slider fx:id="smudgeVolumeSlider"
-                                        min="0.0" max="100.0"
                                         showTickMarks="true" showTickLabels="true"
                                         blockIncrement="5"/>
                             </VBox>
