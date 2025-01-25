@@ -41,8 +41,8 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git remote set-url origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
 
-      - name: Finalize Release Version
-        id: version
+      - name: Get Current Version
+        id: get-version
         run: |
           $CURRENT_VERSION = (mvn help:evaluate -Dexpression="project.version" -q -DforceStdout)
           $BASE_VERSION = $CURRENT_VERSION -replace '-SNAPSHOT', ''
@@ -50,16 +50,21 @@ jobs:
           echo "final_version=$BASE_VERSION" >> $env:GITHUB_OUTPUT
           Write-Host "CURRENT_VERSION: $CURRENT_VERSION"
           Write-Host "BASE_VERSION: $BASE_VERSION"
-          mvn versions:set -DnewVersion="$BASE_VERSION" -DgenerateBackupPoms=false
+        shell: pwsh
+
+      - name: Finalize Release Version
+        id: version
+        run: |
+          mvn versions:set -DnewVersion="${{ steps.get-version.outputs.final_version }}" -DgenerateBackupPoms=false
           git add pom.xml
-          git commit -m "chore: finalize release version $BASE_VERSION"
+          git commit -m "chore: finalize release version ${{ steps.get-version.outputs.final_version }}"
           git push origin HEAD
         shell: pwsh
 
       - name: Build & Create Installer
         shell: pwsh
         run: |
-          $BASE_VERSION = "${{ steps.version.outputs.final_version }}"
+          $BASE_VERSION = "${{ steps.get-version.outputs.final_version }}"
           Write-Host "BASE_VERSION: $BASE_VERSION"
           mvn clean install -DmoduleVersion="$BASE_VERSION"
           ISCC.exe target\classes\setup.iss
@@ -67,8 +72,8 @@ jobs:
       - name: Tag the commit
         run: |
           git fetch --all
-          git tag "v${{ steps.version.outputs.final_version }}"
-          git push origin "v${{ steps.version.outputs.final_version }}"
+          git tag "v${{ steps.get-version.outputs.final_version }}"
+          git push origin "v${{ steps.get-version.outputs.final_version }}"
 
       - name: Changelog
         uses: Bullrich/generate-release-changelog@master
@@ -80,20 +85,21 @@ jobs:
         run: |
           git checkout main
           git pull origin main
-          git merge --no-ff ${{ github.event.inputs.release_branch }} -m "chore: Merge release ${{ steps.version.outputs.final_version }} into main"
+          git merge --no-ff ${{ github.event.inputs.release_branch }} -m "chore: Merge release ${{ steps.get-version.outputs.final_version }} into main"
           git push origin master
 
       - name: Merge release into develop
         run: |
           git checkout develop
           git pull origin develop
-          git merge --no-ff ${{ github.event.inputs.release_branch }} -m "chore: Merge release ${{ steps.version.outputs.final_version }} into develop"
+          git merge --no-ff ${{ github.event.inputs.release_branch }} -m "chore: Merge release ${{ steps.get-version.outputs.final_version }} into develop"
           git push origin develop
 
-      - name: Bump develop to next minor snapshot
+      - name: Get Release version
+        id: get-release-version
         run: |
           # Read final release version from step
-          $FINAL_VERSION = "${{ steps.version.outputs.final_version }}"
+          $FINAL_VERSION = "${{ steps.get-version.outputs.final_version }}"
           Write-Host "FINAL_VERSION: $FINAL_VERSION"
 
           # Parse it e.g. 1.2.0
@@ -110,12 +116,15 @@ jobs:
           $MINOR = [int]$MINOR + 1
           $NEXT_DEV_VERSION = "$MAJOR.$MINOR.0-SNAPSHOT"
           Write-Host "NEXT_DEV_VERSION: $NEXT_DEV_VERSION"
+          echo "next_dev_version=$NEXT_DEV_VERSION" >> $env:GITHUB_OUTPUT
+        shell: pwsh
 
-          # We are currently on 'develop' branch from the merge step above
-          mvn versions:set -DnewVersion="$NEXT_DEV_VERSION" -DgenerateBackupPoms=false
+      - name: Bump Maven Version on develop branch
+        run: |
+          mvn versions:set -DnewVersion="${{ steps.get-release-version.outputs.next_dev_version }}" -DgenerateBackupPoms=false
           git add pom.xml
-          git commit -m "chore: Bump develop to $NEXT_DEV_VERSION for new dev cycle"
-          git push origin develop
+          git commit -m "chore: bump develop version to ${{ steps.get-release-version.outputs.next_dev_version }}"
+          git push origin HEAD
         shell: pwsh
 
       - name: Upload EXE
