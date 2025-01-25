@@ -19,7 +19,7 @@ jobs:
         run: |
           chcp 65001
           echo "Testing env"
-          echo "MY_VAR=test123" >> $env:GITHUB_ENV
+          echo "MY_VAR=test123" >> "$env:GITHUB_ENV"
           echo "$env:MY_VAR"
 
 #      - name: Check out release branch
