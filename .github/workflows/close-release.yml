@@ -35,8 +35,8 @@ jobs:
       - name: Get Current Version
         id: get-version
         run: |
-          $CURRENT_VERSION = (mvn help:evaluate -Dexpression="project.version" -q -DforceStdout)
-          $BASE_VERSION = $CURRENT_VERSION -replace '-SNAPSHOT', ''
+          $env:CURRENT_VERSION = (mvn help:evaluate -Dexpression="project.version" -q -DforceStdout)
+          $env:BASE_VERSION = $env:CURRENT_VERSION -replace '-SNAPSHOT', ''
           echo "FINAL_VERSION=$env:BASE_VERSION"
           echo "final_version=$env:BASE_VERSION" >> $GITHUB_OUTPUT
           echo "CURRENT_VERSION: $env:CURRENT_VERSION"
