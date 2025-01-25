@@ -55,6 +55,7 @@ jobs:
       - name: Finalize Release Version
         id: version
         run: |
+          echo "${{ steps.get-version.outputs.final_version }}"
           mvn versions:set -DnewVersion="${{ steps.get-version.outputs.final_version }}" -DgenerateBackupPoms=false
           git add pom.xml
           git commit -m "chore: finalize release version ${{ steps.get-version.outputs.final_version }}"
