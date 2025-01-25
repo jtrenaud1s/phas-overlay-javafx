@@ -73,6 +73,17 @@
     </dependencies>
 
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <!-- Filter any .iss files -->
+                    <include>**/*.iss</include>
+                </includes>
+            </resource>
+            <!-- ... other resource folders if needed ... -->
+        </resources>
         <plugins>
             <!-- Use the maven-compiler-plugin to compile with Java 17 and Lombok -->
             <plugin>

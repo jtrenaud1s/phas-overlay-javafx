@@ -1,9 +1,9 @@
 [Setup]
 AppName=PhasOverlay
-AppVersion=1.2
+AppVersion=${project.version}
 DefaultDirName={commonpf}\PhasOverlay
 DefaultGroupName=PhasOverlay
-OutputBaseFilename=PhasOverlay-1.2-installer
+OutputBaseFilename=PhasOverlay-${project.version}-installer
 OutputDir=target
 Compression=lzma
 SolidCompression=yes
