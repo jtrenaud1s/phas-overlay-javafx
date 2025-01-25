@@ -15,6 +15,11 @@ jobs:
   close-release:
     runs-on: windows-latest
     steps:
+      - name: Test env
+        run: |
+          echo "Testing env"
+          echo "MY_VAR=test123" >> $GITHUB_ENV
+          echo "$Env:MY_VAR"
       - name: Check out release branch
         uses: actions/checkout@v3
         with:
@@ -26,6 +31,7 @@ jobs:
           distribution: temurin
           java-version: 17
 
+
       - name: Configure Git
         run: |
           git config user.name "github-actions[bot]"
@@ -36,10 +42,10 @@ jobs:
         id: get-version
         run: |
           $env:CURRENT_VERSION = (mvn help:evaluate -Dexpression="project.version" -q -DforceStdout)
+          echo "CURRENT_VERSION: $env:CURRENT_VERSION"
           $env:BASE_VERSION = $env:CURRENT_VERSION -replace '-SNAPSHOT', ''
           echo "FINAL_VERSION=$env:BASE_VERSION"
           echo "final_version=$env:BASE_VERSION" >> $GITHUB_OUTPUT
-          echo "CURRENT_VERSION: $env:CURRENT_VERSION"
           echo "BASE_VERSION: $env:BASE_VERSION"
         shell: pwsh
 
