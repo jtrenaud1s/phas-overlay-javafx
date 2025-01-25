@@ -19,19 +19,6 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      # 1) Attempt to restore the Chocolatey packages from cache
-      - name: Cache Chocolatey Packages
-        uses: actions/cache@v3
-        with:
-          path: |
-            C:\ProgramData\chocolatey\lib
-            C:\ProgramData\chocolatey\bin
-            C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools
-            C:\Program Files (x86)\Windows Kits\10
-          key: choco-${{ runner.os }}
-          restore-keys: |
-            choco-${{ runner.os }}
-
       # 2) Install VS Build Tools
       - name: Set up Clang
         uses: egor-tensin/setup-clang@v1
@@ -40,13 +27,13 @@ jobs:
           platform: x64
 
       # 3) Print the PATH environment variable
+      - uses: ilammy/msvc-dev-cmd@v1
       - name: Print PATH
         shell: cmd
         run: echo %PATH%
 
       # 4) Run the Developer Command Prompt setup + Maven in the same step
       # so the environment variables carry through.
-      - uses: ilammy/msvc-dev-cmd@v1
       - name: Build with Maven
         # Must use Windows 'cmd' shell so "call" works
         run: mvn clean install
