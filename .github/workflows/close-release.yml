@@ -19,7 +19,12 @@ jobs:
         run: |
           echo "Testing env"
           echo "MY_VAR=test123" >> "$env:GITHUB_ENV"
-          echo "$env:MY_VAR"
+        shell: pwsh
+
+      - name: Use MY_VAR in a subsequent step
+        run: |
+          echo "MY_VAR is $env:MY_VAR"
+        shell: pwsh
 
 #      - name: Check out release branch
 #        uses: actions/checkout@v3
