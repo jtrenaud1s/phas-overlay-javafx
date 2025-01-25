@@ -2,7 +2,7 @@ name: Windows Build (with VS2022 Build Tools + Cache)
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "develop" ]
 
 jobs:
   build-and-package:
