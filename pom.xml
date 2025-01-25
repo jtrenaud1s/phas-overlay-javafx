@@ -204,7 +204,7 @@
                             <goal>exec</goal>
                         </goals>
                         <configuration>
-                            <executable>clang-cl</executable>
+                            <executable>clang</executable>
                             <arguments>
                                 <argument>/Fe:${project.build.directory}\PhasOverlay.exe</argument>
                                 <argument>src\main\c\launcher.c</argument>
