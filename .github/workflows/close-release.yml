@@ -15,28 +15,22 @@ jobs:
   close-release:
     runs-on: windows-latest
     steps:
-      - name: Test env
+      - name: Test env in the same step
+        shell: pwsh
         run: |
+          $env:MY_VAR = "test123"
           echo "Testing env"
-          echo "MY_VAR=test123" >> "$env:GITHUB_ENV"
-        shell: pwsh
+          echo $env:MY_VAR
+      - name: Check out release branch
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.inputs.release_branch }}
 
-      - name: Use MY_VAR in a subsequent step
-        run: |
-          echo "MY_VAR is $env:MY_VAR"
-        shell: pwsh
-
-#      - name: Check out release branch
-#        uses: actions/checkout@v3
-#        with:
-#          ref: ${{ github.event.inputs.release_branch }}
-#
 #      - name: Set up Java
 #        uses: actions/setup-java@v3
 #        with:
 #          distribution: temurin
 #          java-version: 17
-#
 #
 #      - name: Configure Git
 #        run: |
@@ -51,7 +45,7 @@ jobs:
 #          echo "CURRENT_VERSION: $env:CURRENT_VERSION"
 #          $env:BASE_VERSION = $env:CURRENT_VERSION -replace '-SNAPSHOT', ''
 #          echo "FINAL_VERSION=$env:BASE_VERSION"
-#          echo "final_version=$env:BASE_VERSION" >> $GITHUB_OUTPUT
+#          echo "final_version=$env:BASE_VERSION" >> "$env:GITHUB_OUTPUT"
 #          echo "BASE_VERSION: $env:BASE_VERSION"
 #        shell: pwsh
 #
