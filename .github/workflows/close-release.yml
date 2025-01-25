@@ -15,6 +15,11 @@ jobs:
   close-release:
     runs-on: windows-latest
     steps:
+      - name: Check out release branch
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.inputs.release_branch }}
+
       - name: Set up Java
         uses: actions/setup-java@v3
         with:
@@ -37,16 +42,16 @@ jobs:
           echo "FINAL_VERSION=$env:BASE_VERSION"
           echo "final_version=$env:BASE_VERSION" >> "$env:GITHUB_OUTPUT"
         shell: pwsh
-#
-#      - name: Finalize Release Version
-#        id: version
-#        run: |
-#          echo "${{ steps.get-version.outputs.final_version }}"
-#          mvn versions:set -DnewVersion="${{ steps.get-version.outputs.final_version }}" -DgenerateBackupPoms=false
-#          git add pom.xml
-#          git commit -m "chore: finalize release version ${{ steps.get-version.outputs.final_version }}"
-#          git push origin HEAD
-#        shell: pwsh
+
+      - name: Finalize Release Version
+        id: version
+        run: |
+          echo "${{ steps.get-version.outputs.final_version }}"
+          mvn versions:set -DnewVersion="${{ steps.get-version.outputs.final_version }}" -DgenerateBackupPoms=false
+          git add pom.xml
+          git commit -m "chore: finalize release version ${{ steps.get-version.outputs.final_version }}"
+          git push origin HEAD
+        shell: pwsh
 #
 #      - name: Set up Clang
 #        uses: egor-tensin/setup-clang@v1
