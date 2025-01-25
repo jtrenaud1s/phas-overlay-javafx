@@ -11,7 +11,6 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
-      - uses: ilammy/msvc-dev-cmd@v1
 
 
       - name: Set up Java
@@ -47,7 +46,7 @@ jobs:
 
       # 4) Run the Developer Command Prompt setup + Maven in the same step
       # so the environment variables carry through.
-
+      - uses: ilammy/msvc-dev-cmd@v1
       - name: Build with Maven
         # Must use Windows 'cmd' shell so "call" works
         run: mvn clean install
