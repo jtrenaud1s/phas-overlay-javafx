@@ -15,39 +15,28 @@ jobs:
   close-release:
     runs-on: windows-latest
     steps:
-      - name: Test env in the same step
-        shell: pwsh
-        run: |
-          $env:MY_VAR = "test123"
-          echo "Testing env"
-          echo "MY_VAR=$env:MY_VAR"
-      - name: Check out release branch
-        uses: actions/checkout@v3
+      - name: Set up Java
+        uses: actions/setup-java@v3
         with:
-          ref: ${{ github.event.inputs.release_branch }}
+          distribution: temurin
+          java-version: 17
 
-#      - name: Set up Java
-#        uses: actions/setup-java@v3
-#        with:
-#          distribution: temurin
-#          java-version: 17
-#
-#      - name: Configure Git
-#        run: |
-#          git config user.name "github-actions[bot]"
-#          git config user.email "github-actions[bot]@users.noreply.github.com"
-#          git remote set-url origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
-#
-#      - name: Get Current Version
-#        id: get-version
-#        run: |
-#          $env:CURRENT_VERSION = (mvn help:evaluate -Dexpression="project.version" -q -DforceStdout)
-#          echo "CURRENT_VERSION: $env:CURRENT_VERSION"
-#          $env:BASE_VERSION = $env:CURRENT_VERSION -replace '-SNAPSHOT', ''
-#          echo "FINAL_VERSION=$env:BASE_VERSION"
-#          echo "final_version=$env:BASE_VERSION" >> "$env:GITHUB_OUTPUT"
-#          echo "BASE_VERSION: $env:BASE_VERSION"
-#        shell: pwsh
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
+
+      - name: Get Current Version
+        id: get-version
+        run: |
+          $env:CURRENT_VERSION = (mvn help:evaluate -Dexpression="project.version" -q -DforceStdout)
+          echo "CURRENT_VERSION: $env:CURRENT_VERSION"
+          $env:BASE_VERSION = $env:CURRENT_VERSION -replace '-SNAPSHOT', ''
+          echo "BASE_VERSION: $env:BASE_VERSION"
+          echo "FINAL_VERSION=$env:BASE_VERSION"
+          echo "final_version=$env:BASE_VERSION" >> "$env:GITHUB_OUTPUT"
+        shell: pwsh
 #
 #      - name: Finalize Release Version
 #        id: version
