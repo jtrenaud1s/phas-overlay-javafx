@@ -41,12 +41,10 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git remote set-url origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
 
-
-      # 1) Finalize version (remove -SNAPSHOT)
       - name: Finalize Release Version
         id: version
         run: |
-          $CURRENT_VERSION = (mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          $CURRENT_VERSION = (mvn help:evaluate -Dexpression="project.version" -q -DforceStdout)
           $BASE_VERSION = $CURRENT_VERSION -replace '-SNAPSHOT', ''
           echo "FINAL_VERSION=$BASE_VERSION"
           echo "final_version=$BASE_VERSION" >> $env:GITHUB_OUTPUT
@@ -56,14 +54,12 @@ jobs:
           git push origin HEAD
         shell: pwsh
 
-      # 2) Build project, produce installer
       - name: Build & Create Installer
         shell: cmd
         run: |
           mvn clean install
           ISCC.exe target\classes\setup.iss
 
-      # 3) Tag
       - name: Tag the commit
         run: |
           git fetch --all
@@ -76,7 +72,6 @@ jobs:
         env:
           REPO: ${{ github.repository }}
 
-      # 4) Merge release -> master
       - name: Merge release into main
         run: |
           git checkout main
@@ -84,7 +79,6 @@ jobs:
           git merge --no-ff ${{ github.event.inputs.release_branch }} -m "chore: Merge release ${{ steps.version.outputs.final_version }} into main"
           git push origin master
 
-      # 5) Merge release -> develop
       - name: Merge release into develop
         run: |
           git checkout develop
@@ -92,7 +86,6 @@ jobs:
           git merge --no-ff ${{ github.event.inputs.release_branch }} -m "chore: Merge release ${{ steps.version.outputs.final_version }} into develop"
           git push origin develop
 
-      # 6) Bump develop to next minor snapshot
       - name: Bump develop to next minor snapshot
         run: |
           # read final release version from step
