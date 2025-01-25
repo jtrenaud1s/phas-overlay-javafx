@@ -18,154 +18,155 @@ jobs:
       - name: Test env
         run: |
           echo "Testing env"
-          echo "MY_VAR=test123" >> $GITHUB_ENV
-          echo "$Env:MY_VAR"
-      - name: Check out release branch
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.inputs.release_branch }}
+          echo "MY_VAR=test123" >> $env:GITHUB_ENV
+          echo "$env:MY_VAR"
 
-      - name: Set up Java
-        uses: actions/setup-java@v3
-        with:
-          distribution: temurin
-          java-version: 17
-
-
-      - name: Configure Git
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git remote set-url origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
-
-      - name: Get Current Version
-        id: get-version
-        run: |
-          $env:CURRENT_VERSION = (mvn help:evaluate -Dexpression="project.version" -q -DforceStdout)
-          echo "CURRENT_VERSION: $env:CURRENT_VERSION"
-          $env:BASE_VERSION = $env:CURRENT_VERSION -replace '-SNAPSHOT', ''
-          echo "FINAL_VERSION=$env:BASE_VERSION"
-          echo "final_version=$env:BASE_VERSION" >> $GITHUB_OUTPUT
-          echo "BASE_VERSION: $env:BASE_VERSION"
-        shell: pwsh
-
-      - name: Finalize Release Version
-        id: version
-        run: |
-          echo "${{ steps.get-version.outputs.final_version }}"
-          mvn versions:set -DnewVersion="${{ steps.get-version.outputs.final_version }}" -DgenerateBackupPoms=false
-          git add pom.xml
-          git commit -m "chore: finalize release version ${{ steps.get-version.outputs.final_version }}"
-          git push origin HEAD
-        shell: pwsh
-
-      - name: Set up Clang
-        uses: egor-tensin/setup-clang@v1
-        with:
-          version: latest
-          platform: x64
-
-      - name: Setup MSVC Dev Cmd
-        uses: ilammy/msvc-dev-cmd@v1
-
-      - name: Build & Create Installer
-        shell: pwsh
-        run: |
-          $BASE_VERSION = "${{ steps.get-version.outputs.final_version }}"
-          Write-Host "BASE_VERSION: $env:BASE_VERSION"
-          mvn clean install -DmoduleVersion="$env:BASE_VERSION"
-          ISCC.exe target\classes\setup.iss
-
-      - name: Tag the commit
-        run: |
-          git fetch --all
-          git tag "v${{ steps.get-version.outputs.final_version }}"
-          git push origin "v${{ steps.get-version.outputs.final_version }}"
-
-      - name: Changelog
-        uses: Bullrich/generate-release-changelog@master
-        id: Changelog
-        env:
-          REPO: ${{ github.repository }}
-
-      - name: Merge release into main
-        run: |
-          git checkout main
-          git pull origin main
-          git merge --no-ff ${{ github.event.inputs.release_branch }} -m "chore: Merge release ${{ steps.get-version.outputs.final_version }} into main"
-          git push origin master
-
-      - name: Merge release into develop
-        run: |
-          git checkout develop
-          git pull origin develop
-          git merge --no-ff ${{ github.event.inputs.release_branch }} -m "chore: Merge release ${{ steps.get-version.outputs.final_version }} into develop"
-          git push origin develop
-
-      - name: Get Release version
-        id: get-release-version
-        run: |
-          # Read final release version from step
-          $FINAL_VERSION = "${{ steps.get-version.outputs.final_version }}"
-          Write-Host "FINAL_VERSION: $env:FINAL_VERSION"
-
-          # Parse it e.g. 1.2.0
-          $parts = $FINAL_VERSION -split '\.'
-          $MAJOR = $parts[0]
-          $MINOR = if ($parts.Length -gt 1) { $parts[1] } else { 0 }
-          $PATCH = if ($parts.Length -gt 2) { $parts[2] } else { 0 }
-          Write-Host "MAJOR: $MAJOR"
-          Write-Host "MINOR: $MINOR"
-          Write-Host "PATCH: $PATCH"
-
-          # Typically we bump the MINOR for the next dev cycle
-          # so if final release was 1.2.0, next dev is 1.3.0-SNAPSHOT
-          $MINOR = [int]$MINOR + 1
-          $NEXT_DEV_VERSION = "$MAJOR.$MINOR.0-SNAPSHOT"
-          Write-Host "NEXT_DEV_VERSION: $NEXT_DEV_VERSION"
-          echo "next_dev_version=$NEXT_DEV_VERSION" >> GITHUB_OUTPUT
-        shell: pwsh
-
-      - name: Bump Maven Version on develop branch
-        run: |
-          mvn versions:set -DnewVersion="${{ steps.get-release-version.outputs.next_dev_version }}" -DgenerateBackupPoms=false
-          git add pom.xml
-          git commit -m "chore: bump develop version to ${{ steps.get-release-version.outputs.next_dev_version }}"
-          git push origin HEAD
-        shell: pwsh
-
-      - name: Upload EXE
-        uses: actions/upload-artifact@v3
-        with:
-          name: PhasOverlay-Installer
-          path: target\PhasOverlay-${{ steps.version.outputs.final_version }}-installer.exe
-
-      - name: Upload MSI
-        uses: actions/upload-artifact@v3
-        with:
-          name: PhasOverlay-MSI
-          path: target/*.msi
-
-      - name: Create GitHub Release
-        id: create_release
-        uses: actions/create-release@v1
-        with:
-          tag_name: v${{ steps.version.outputs.final_version }}
-          release_name: "v${{ steps.version.outputs.final_version }}"
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload Installer to Release
-        if: ${{ success() }}
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: target\PhasOverlay-${{ steps.version.outputs.final_version }}-installer.exe
-          asset_name: PhasOverlay-${{ steps.version.outputs.final_version }}-installer.exe
-          asset_content_type: application/octet-stream
-          body: |
-            ${{ steps.Changelog.outputs.changelog }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#      - name: Check out release branch
+#        uses: actions/checkout@v3
+#        with:
+#          ref: ${{ github.event.inputs.release_branch }}
+#
+#      - name: Set up Java
+#        uses: actions/setup-java@v3
+#        with:
+#          distribution: temurin
+#          java-version: 17
+#
+#
+#      - name: Configure Git
+#        run: |
+#          git config user.name "github-actions[bot]"
+#          git config user.email "github-actions[bot]@users.noreply.github.com"
+#          git remote set-url origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
+#
+#      - name: Get Current Version
+#        id: get-version
+#        run: |
+#          $env:CURRENT_VERSION = (mvn help:evaluate -Dexpression="project.version" -q -DforceStdout)
+#          echo "CURRENT_VERSION: $env:CURRENT_VERSION"
+#          $env:BASE_VERSION = $env:CURRENT_VERSION -replace '-SNAPSHOT', ''
+#          echo "FINAL_VERSION=$env:BASE_VERSION"
+#          echo "final_version=$env:BASE_VERSION" >> $GITHUB_OUTPUT
+#          echo "BASE_VERSION: $env:BASE_VERSION"
+#        shell: pwsh
+#
+#      - name: Finalize Release Version
+#        id: version
+#        run: |
+#          echo "${{ steps.get-version.outputs.final_version }}"
+#          mvn versions:set -DnewVersion="${{ steps.get-version.outputs.final_version }}" -DgenerateBackupPoms=false
+#          git add pom.xml
+#          git commit -m "chore: finalize release version ${{ steps.get-version.outputs.final_version }}"
+#          git push origin HEAD
+#        shell: pwsh
+#
+#      - name: Set up Clang
+#        uses: egor-tensin/setup-clang@v1
+#        with:
+#          version: latest
+#          platform: x64
+#
+#      - name: Setup MSVC Dev Cmd
+#        uses: ilammy/msvc-dev-cmd@v1
+#
+#      - name: Build & Create Installer
+#        shell: pwsh
+#        run: |
+#          $BASE_VERSION = "${{ steps.get-version.outputs.final_version }}"
+#          Write-Host "BASE_VERSION: $env:BASE_VERSION"
+#          mvn clean install -DmoduleVersion="$env:BASE_VERSION"
+#          ISCC.exe target\classes\setup.iss
+#
+#      - name: Tag the commit
+#        run: |
+#          git fetch --all
+#          git tag "v${{ steps.get-version.outputs.final_version }}"
+#          git push origin "v${{ steps.get-version.outputs.final_version }}"
+#
+#      - name: Changelog
+#        uses: Bullrich/generate-release-changelog@master
+#        id: Changelog
+#        env:
+#          REPO: ${{ github.repository }}
+#
+#      - name: Merge release into main
+#        run: |
+#          git checkout main
+#          git pull origin main
+#          git merge --no-ff ${{ github.event.inputs.release_branch }} -m "chore: Merge release ${{ steps.get-version.outputs.final_version }} into main"
+#          git push origin master
+#
+#      - name: Merge release into develop
+#        run: |
+#          git checkout develop
+#          git pull origin develop
+#          git merge --no-ff ${{ github.event.inputs.release_branch }} -m "chore: Merge release ${{ steps.get-version.outputs.final_version }} into develop"
+#          git push origin develop
+#
+#      - name: Get Release version
+#        id: get-release-version
+#        run: |
+#          # Read final release version from step
+#          $FINAL_VERSION = "${{ steps.get-version.outputs.final_version }}"
+#          Write-Host "FINAL_VERSION: $env:FINAL_VERSION"
+#
+#          # Parse it e.g. 1.2.0
+#          $parts = $FINAL_VERSION -split '\.'
+#          $MAJOR = $parts[0]
+#          $MINOR = if ($parts.Length -gt 1) { $parts[1] } else { 0 }
+#          $PATCH = if ($parts.Length -gt 2) { $parts[2] } else { 0 }
+#          Write-Host "MAJOR: $MAJOR"
+#          Write-Host "MINOR: $MINOR"
+#          Write-Host "PATCH: $PATCH"
+#
+#          # Typically we bump the MINOR for the next dev cycle
+#          # so if final release was 1.2.0, next dev is 1.3.0-SNAPSHOT
+#          $MINOR = [int]$MINOR + 1
+#          $NEXT_DEV_VERSION = "$MAJOR.$MINOR.0-SNAPSHOT"
+#          Write-Host "NEXT_DEV_VERSION: $NEXT_DEV_VERSION"
+#          echo "next_dev_version=$NEXT_DEV_VERSION" >> GITHUB_OUTPUT
+#        shell: pwsh
+#
+#      - name: Bump Maven Version on develop branch
+#        run: |
+#          mvn versions:set -DnewVersion="${{ steps.get-release-version.outputs.next_dev_version }}" -DgenerateBackupPoms=false
+#          git add pom.xml
+#          git commit -m "chore: bump develop version to ${{ steps.get-release-version.outputs.next_dev_version }}"
+#          git push origin HEAD
+#        shell: pwsh
+#
+#      - name: Upload EXE
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: PhasOverlay-Installer
+#          path: target\PhasOverlay-${{ steps.version.outputs.final_version }}-installer.exe
+#
+#      - name: Upload MSI
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: PhasOverlay-MSI
+#          path: target/*.msi
+#
+#      - name: Create GitHub Release
+#        id: create_release
+#        uses: actions/create-release@v1
+#        with:
+#          tag_name: v${{ steps.version.outputs.final_version }}
+#          release_name: "v${{ steps.version.outputs.final_version }}"
+#          draft: false
+#          prerelease: false
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#
+#      - name: Upload Installer to Release
+#        if: ${{ success() }}
+#        uses: actions/upload-release-asset@v1
+#        with:
+#          upload_url: ${{ steps.create_release.outputs.upload_url }}
+#          asset_path: target\PhasOverlay-${{ steps.version.outputs.final_version }}-installer.exe
+#          asset_name: PhasOverlay-${{ steps.version.outputs.final_version }}-installer.exe
+#          asset_content_type: application/octet-stream
+#          body: |
+#            ${{ steps.Changelog.outputs.changelog }}
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
