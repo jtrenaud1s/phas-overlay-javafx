@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-             http://maven.apache.org/xsd/maven-4.0.0.xsd">
+                             http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
@@ -49,7 +49,6 @@
             <artifactId>jackson-databind</artifactId>
             <version>${jackson.version}</version>
         </dependency>
-
         <!-- JavaFX dependencies -->
         <dependency>
             <groupId>org.openjfx</groupId>
@@ -87,11 +86,13 @@
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
-                            <version>1.18.34</version>
+                            <version>${lombok.version}</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>
+
+            <!-- Maven Dependency Plugin to copy jnativehook jar -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
@@ -117,7 +118,7 @@
                 </executions>
             </plugin>
 
-            <!-- Maven Antrun Plugin -->
+            <!-- Maven Antrun Plugin to extract libraries -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
@@ -146,7 +147,8 @@
                     </execution>
                 </executions>
             </plugin>
-            <!-- JavaFX Maven Plugin -->
+
+            <!-- JavaFX Maven Plugin to build a runtime image with jlink -->
             <plugin>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
@@ -173,24 +175,13 @@
                 </executions>
             </plugin>
 
+            <!-- Exec Maven Plugin for resource compilation and native launcher -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.1.0</version>
                 <executions>
-                    <execution>
-                        <id>run-innosetup</id>
-                        <phase>install</phase>
-                        <configuration>
-                            <executable>ISCC.exe</executable> <!-- Path to the Inno Setup Compiler -->
-                            <arguments>
-                                <argument>${basedir}/setup.iss</argument> <!-- Path to the .iss script -->
-                            </arguments>
-                        </configuration>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                    </execution>
+                    <!-- REMOVED run-innosetup here -->
                     <execution>
                         <id>compile-launcher-resources</id>
                         <phase>compile</phase>
@@ -198,7 +189,6 @@
                             <goal>exec</goal>
                         </goals>
                         <configuration>
-                            <!-- 1) Run the resource compiler (rc.exe) -->
                             <executable>rc.exe</executable>
                             <arguments>
                                 <argument>/fo</argument>
