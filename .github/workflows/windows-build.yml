@@ -33,37 +33,39 @@ jobs:
 
       # 2) Install VS Build Tools & Inno Setup (if not already cached)
       - name: Install Visual Studio 2022 Build Tools & Inno Setup
-        shell: powershell
         run: |
           if (!(Test-Path "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools")) {
-            choco install visualstudio2022buildtools --yes --package-parameters "--includeRecommended --includeOptional"
+              choco install visualstudio2022buildtools --yes --package-parameters "--includeRecommended --includeOptional --quiet --wait"
           }
           if (!(Test-Path "C:\Program Files (x86)\Windows Kits\10")) {
-            choco install windows-sdk-10.0 --package-parameters "--quiet --wait"
+              choco install windows-sdk-10.0 --package-parameters "--quiet --wait"
           }
           choco install innosetup --yes
 
+      # 3) Print the PATH environment variable
       - name: Print PATH
         shell: cmd
         run: echo %PATH%
 
-      # 3) Run the Developer Command Prompt setup + Maven in the same step
+      # 4) Run the Developer Command Prompt setup + Maven in the same step
       # so the environment variables carry through.
       - name: Build with Maven (Developer Command Prompt)
         # Must use Windows 'cmd' shell so "call" works
         shell: cmd
         run: |
           call "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" x86_x64
+          set PATH=%PATH%;C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.29.30133\bin\Hostx64\x64;C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x64
+          echo %PATH%
           mvn clean package
 
-      # 4) Run Inno Setup
+      # 5) Run Inno Setup
       - name: Run Inno Setup
         shell: cmd
         run: |
           call "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" x86_x64
           ISCC.exe setup.iss
 
-      # 5) Upload artifacts: jars, exes, msis, etc.
+      # 6) Upload artifacts: jars, exes, msis, etc.
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
