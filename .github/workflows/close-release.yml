@@ -20,7 +20,7 @@ jobs:
         run: |
           $env:MY_VAR = "test123"
           echo "Testing env"
-          echo $env:MY_VAR
+          echo "MY_VAR=$env:MY_VAR"
       - name: Check out release branch
         uses: actions/checkout@v3
         with:
