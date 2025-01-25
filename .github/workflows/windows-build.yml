@@ -12,6 +12,8 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v3
 
+
+
       - name: Set up Java
         uses: actions/setup-java@v3
         with:
@@ -45,9 +47,9 @@ jobs:
 
       # 4) Run the Developer Command Prompt setup + Maven in the same step
       # so the environment variables carry through.
-      - name: Build with Maven
+      - uses: ilammy/msvc-dev-cmd@v1
+        name: Build with Maven
         # Must use Windows 'cmd' shell so "call" works
-        shell: cmd
         run: mvn clean install
 
       # 5) Run Inno Setup
