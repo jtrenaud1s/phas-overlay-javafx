@@ -48,7 +48,7 @@ jobs:
           $BASE_VERSION = $CURRENT_VERSION -replace '-SNAPSHOT', ''
           echo "FINAL_VERSION=$BASE_VERSION"
           echo "final_version=$BASE_VERSION" >> $env:GITHUB_OUTPUT
-          mvn versions:set -DnewVersion=$BASE_VERSION -DgenerateBackupPoms=false
+          mvn versions:set -DnewVersion="$BASE_VERSION" -DgenerateBackupPoms=false
           git add pom.xml
           git commit -m "chore: finalize release version $BASE_VERSION"
           git push origin HEAD
