@@ -35,12 +35,12 @@ jobs:
       - name: Install Visual Studio 2022 Build Tools & Inno Setup
         run: |
           if (!(Test-Path "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools")) {
-            choco install visualstudio2022buildtools --yes --package-parameters
+              choco install visualstudio2022buildtools --yes --package-parameters "--includeRecommended --includeOptional --quiet --wait"
           }
-          if (!(Test-Path "C:\Program Files (x86)\Windows Kits\10")) {
+            if (!(Test-Path "C:\Program Files (x86)\Windows Kits\10")) {
             choco install windows-sdk-10.0 --package-parameters "--quiet --wait"
           }
-          choco install innosetup --yes
+            choco install innosetup --yes
 
       # 3) Run the Developer Command Prompt setup + Maven in the same step
       # so the environment variables carry through.
