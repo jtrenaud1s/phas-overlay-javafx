@@ -27,9 +27,9 @@ jobs:
             C:\ProgramData\chocolatey\bin
             C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools
             C:\Program Files (x86)\Windows Kits\10
-          key: choco-${{ runner.os }}-${{ hashFiles('pom.xml', 'setup.iss') }}
+          key: choco-${{ runner.os }}
           restore-keys: |
-            choco-${{ runner.os }}-
+            choco-${{ runner.os }}
 
       # 2) Install VS Build Tools & Inno Setup (if not already cached)
       - name: Install Visual Studio 2022 Build Tools & Inno Setup
@@ -44,21 +44,10 @@ jobs:
       # 3) Print the PATH environment variable
       - name: Print PATH
         shell: cmd
-        run: echo %PATH%
-
-      - name: Show directory tree for Visual Studio Build Tools
-        shell: cmd
-        run: tree "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools" /F /A
-
-      - name: Show directory tree for Windows Kits
-        shell: cmd
-        run: tree "C:\Program Files (x86)\Windows Kits\10" /F /A
-
-      - name: Add SDK to PATH
-        shell: cmd
         run: |
-          set PATH=%PATH%;C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.29.30133\bin\Hostx64\x64;C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x64;C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x64
+          call "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\Common7\Tools\VsDevCmd.bat"
           echo %PATH%
+
 
       # 4) Run the Developer Command Prompt setup + Maven in the same step
       # so the environment variables carry through.
@@ -66,7 +55,7 @@ jobs:
         # Must use Windows 'cmd' shell so "call" works
         shell: cmd
         run: |
-          echo %PATH%
+          call "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\Common7\Tools\VsDevCmd.bat"
           mvn clean package
 
       # 5) Run Inno Setup
