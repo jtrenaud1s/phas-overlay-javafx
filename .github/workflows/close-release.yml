@@ -132,7 +132,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: PhasOverlay-Installer
-          path: target\PhasOverlay-${{ steps.version.outputs.final_version }}-installer.exe
+          path: target\PhasOverlay-${{ steps.get-version.outputs.final_version }}-installer.exe
 
       - name: Upload MSI
         uses: actions/upload-artifact@v3
@@ -144,8 +144,8 @@ jobs:
         id: create_release
         uses: actions/create-release@v1
         with:
-          tag_name: v${{ steps.version.outputs.final_version }}
-          release_name: "v${{ steps.version.outputs.final_version }}"
+          tag_name: v${{ steps.get-version.outputs.final_version }}
+          release_name: "v${{ steps.get-version.outputs.final_version }}"
           draft: false
           prerelease: false
         env:
@@ -156,10 +156,8 @@ jobs:
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: target\PhasOverlay-${{ steps.version.outputs.final_version }}-installer.exe
-          asset_name: PhasOverlay-${{ steps.version.outputs.final_version }}-installer.exe
+          asset_path: target\PhasOverlay-${{ steps.get-version.outputs.final_version }}-installer.exe
+          asset_name: PhasOverlay-${{ steps.get-version.outputs.final_version }}-installer.exe
           asset_content_type: application/octet-stream
-          body: |
-            ${{ steps.Changelog.outputs.changelog }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
