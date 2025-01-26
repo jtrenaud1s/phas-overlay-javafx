@@ -88,6 +88,10 @@ jobs:
           git merge --no-ff ${{ github.event.inputs.release_branch }} -m "chore: Merge release ${{ steps.get-version.outputs.final_version }} into develop"
           git push origin develop
 
+      - name: Delete release branch
+        run: |
+          git push origin --delete ${{ github.event.inputs.release_branch }}
+
       - name: Get next snapshot version
         id: get-snapshot-version
         run: |
