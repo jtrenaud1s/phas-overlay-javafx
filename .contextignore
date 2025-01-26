@@ -8,11 +8,11 @@ target/
 .idea/jarRepositories.xml
 .idea/compiler.xml
 .idea/libraries/
+.idea/**/*
 *.iws
 *.iml
 *.ipr
 .git
-context.py
 context.txt
 *.mp3
 *.ico
@@ -36,9 +36,11 @@ context.txt
 build/
 !**/src/main/**/build/
 !**/src/test/**/build/
+.contextignore
 
 ### VS Code ###
 .vscode/
 
 ### Mac OS ###
 .DS_Store
+.gitignore

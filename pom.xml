@@ -82,7 +82,16 @@
                     <include>**/*.iss</include>
                 </includes>
             </resource>
-            <!-- ... other resource folders if needed ... -->
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+                <includes>
+                    <include>**/images/**/*</include>
+                    <include>**/fxml/**/*</include>
+                    <include>**/audio/**/*</include>
+                </includes>
+            </resource>
+
         </resources>
         <plugins>
             <!-- Use the maven-compiler-plugin to compile with Java 17 and Lombok -->

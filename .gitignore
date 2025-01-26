@@ -12,7 +12,6 @@ target/
 *.iml
 *.ipr
 .git
-context.py
 context.txt
 
 ### Eclipse ###
@@ -39,3 +38,4 @@ build/
 
 ### Mac OS ###
 .DS_Store
+../../AppData/Roaming/JetBrains/IntelliJIdea2024.1/scratches/.contextignore
