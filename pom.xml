@@ -8,7 +8,7 @@
 
     <groupId>me.jtrenaud1s.phas</groupId>
     <artifactId>Overlay</artifactId>
-    <version>1.2.0-SNAPSHOT</version>
+    <version>1.2.1-SNAPSHOT</version>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
