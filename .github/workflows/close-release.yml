@@ -99,7 +99,7 @@ jobs:
           $env:parts = $env:FINAL_VERSION -split '\.'
           
           echo "parts: $env:parts"
-          echo "parts length: $env:parts.Length"
+          echo "parts length: ($env:parts.Length)"
           echo "parts[0]: $env:parts[0]"
           echo "parts[1]: $env:parts[1]"
           echo "parts[2]: $env:parts[2]"
