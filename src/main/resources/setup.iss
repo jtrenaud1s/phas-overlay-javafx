@@ -13,8 +13,8 @@ UninstallDisplayIcon={app}\PhasOverlay.exe
 DisableWelcomePage=no
 
 [Files]
-Source: "target\image\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs
-Source: "target\PhasOverlay.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\..\target\image\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs
+Source: "..\..\target\PhasOverlay.exe"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 ; Add a desktop shortcut for the application
