@@ -43,50 +43,50 @@ jobs:
           echo "final_version=$env:BASE_VERSION" >> "$env:GITHUB_OUTPUT"
         shell: pwsh
 
-#      - name: Finalize Release Version
-#        id: version
-#        run: |
-#          echo "${{ steps.get-version.outputs.final_version }}"
-#          mvn versions:set -DnewVersion="${{ steps.get-version.outputs.final_version }}" -DgenerateBackupPoms=false
-#          git add pom.xml
-#          git commit -m "chore: finalize release version ${{ steps.get-version.outputs.final_version }}"
-#          git push origin HEAD
-#        shell: pwsh
-#
-#      - name: Set up Clang
-#        uses: egor-tensin/setup-clang@v1
-#        with:
-#          version: latest
-#          platform: x64
-#
-#      - name: Setup MSVC Dev Cmd
-#        uses: ilammy/msvc-dev-cmd@v1
-#
-#      - name: Build & Create Installer
-#        shell: pwsh
-#        run: |
-#          mvn clean install -DmoduleVersion="${{ steps.get-version.outputs.final_version }}"
-#          ISCC.exe ".\target\classes\setup.iss"
-#
-#      - name: Tag the commit
-#        run: |
-#          git fetch --all
-#          git tag "v${{ steps.get-version.outputs.final_version }}"
-#          git push origin "v${{ steps.get-version.outputs.final_version }}"
-#
-#      - name: Merge release into main
-#        run: |
-#          git checkout main
-#          git pull origin main
-#          git merge --no-ff ${{ github.event.inputs.release_branch }} -m "chore: Merge release ${{ steps.get-version.outputs.final_version }} into main"
-#          git push origin main
-#
-#      - name: Merge release into develop
-#        run: |
-#          git checkout develop
-#          git pull origin develop
-#          git merge --no-ff ${{ github.event.inputs.release_branch }} -m "chore: Merge release ${{ steps.get-version.outputs.final_version }} into develop"
-#          git push origin develop
+      - name: Finalize Release Version
+        id: version
+        run: |
+          echo "${{ steps.get-version.outputs.final_version }}"
+          mvn versions:set -DnewVersion="${{ steps.get-version.outputs.final_version }}" -DgenerateBackupPoms=false
+          git add pom.xml
+          git commit -m "chore: finalize release version ${{ steps.get-version.outputs.final_version }}"
+          git push origin HEAD
+        shell: pwsh
+
+      - name: Set up Clang
+        uses: egor-tensin/setup-clang@v1
+        with:
+          version: latest
+          platform: x64
+
+      - name: Setup MSVC Dev Cmd
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Build & Create Installer
+        shell: pwsh
+        run: |
+          mvn clean install -DmoduleVersion="${{ steps.get-version.outputs.final_version }}"
+          ISCC.exe ".\target\classes\setup.iss"
+
+      - name: Tag the commit
+        run: |
+          git fetch --all
+          git tag "v${{ steps.get-version.outputs.final_version }}"
+          git push origin "v${{ steps.get-version.outputs.final_version }}"
+
+      - name: Merge release into main
+        run: |
+          git checkout main
+          git pull origin main
+          git merge --no-ff ${{ github.event.inputs.release_branch }} -m "chore: Merge release ${{ steps.get-version.outputs.final_version }} into main"
+          git push origin main
+
+      - name: Merge release into develop
+        run: |
+          git checkout develop
+          git pull origin develop
+          git merge --no-ff ${{ github.event.inputs.release_branch }} -m "chore: Merge release ${{ steps.get-version.outputs.final_version }} into develop"
+          git push origin develop
 
       - name: Get next snapshot version
         id: get-snapshot-version
@@ -122,44 +122,44 @@ jobs:
       - name: Bump Maven Version on develop branch
         run: |
           echo "Bumping develop version to ${{ steps.get-snapshot-version.outputs.next_dev_version }}"
-#          mvn versions:set -DnewVersion="${{ steps.get-snapshot-version.outputs.next_dev_version }}" -DgenerateBackupPoms=false
-#          git add pom.xml
-#          git commit -m "chore: bump develop version to ${{ steps.get-snapshot-version.outputs.next_dev_version }}"
-#          git push origin HEAD
+          mvn versions:set -DnewVersion="${{ steps.get-snapshot-version.outputs.next_dev_version }}" -DgenerateBackupPoms=false
+          git add pom.xml
+          git commit -m "chore: bump develop version to ${{ steps.get-snapshot-version.outputs.next_dev_version }}"
+          git push origin HEAD
         shell: pwsh
-#
-#      - name: Upload EXE
-#        uses: actions/upload-artifact@v3
-#        with:
-#          name: PhasOverlay-Installer
-#          path: target\PhasOverlay-${{ steps.version.outputs.final_version }}-installer.exe
-#
-#      - name: Upload MSI
-#        uses: actions/upload-artifact@v3
-#        with:
-#          name: PhasOverlay-MSI
-#          path: target/*.msi
-#
-#      - name: Create GitHub Release
-#        id: create_release
-#        uses: actions/create-release@v1
-#        with:
-#          tag_name: v${{ steps.version.outputs.final_version }}
-#          release_name: "v${{ steps.version.outputs.final_version }}"
-#          draft: false
-#          prerelease: false
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#
-#      - name: Upload Installer to Release
-#        if: ${{ success() }}
-#        uses: actions/upload-release-asset@v1
-#        with:
-#          upload_url: ${{ steps.create_release.outputs.upload_url }}
-#          asset_path: target\PhasOverlay-${{ steps.version.outputs.final_version }}-installer.exe
-#          asset_name: PhasOverlay-${{ steps.version.outputs.final_version }}-installer.exe
-#          asset_content_type: application/octet-stream
-#          body: |
-#            ${{ steps.Changelog.outputs.changelog }}
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload EXE
+        uses: actions/upload-artifact@v3
+        with:
+          name: PhasOverlay-Installer
+          path: target\PhasOverlay-${{ steps.version.outputs.final_version }}-installer.exe
+
+      - name: Upload MSI
+        uses: actions/upload-artifact@v3
+        with:
+          name: PhasOverlay-MSI
+          path: target/*.msi
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        with:
+          tag_name: v${{ steps.version.outputs.final_version }}
+          release_name: "v${{ steps.version.outputs.final_version }}"
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Installer to Release
+        if: ${{ success() }}
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: target\PhasOverlay-${{ steps.version.outputs.final_version }}-installer.exe
+          asset_name: PhasOverlay-${{ steps.version.outputs.final_version }}-installer.exe
+          asset_content_type: application/octet-stream
+          body: |
+            ${{ steps.Changelog.outputs.changelog }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
