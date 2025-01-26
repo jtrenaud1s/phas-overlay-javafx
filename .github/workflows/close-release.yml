@@ -65,7 +65,7 @@ jobs:
         shell: pwsh
         run: |
           mvn clean install -DmoduleVersion="${{ steps.get-version.outputs.final_version }}"
-          ISCC.exe ".target\classes\setup.iss"
+          ISCC.exe ".\target\classes\setup.iss"
 
       - name: Tag the commit
         run: |
