@@ -11,6 +11,7 @@ Uninstallable=yes
 WizardStyle=modern
 UninstallDisplayIcon={app}\PhasOverlay.exe
 DisableWelcomePage=no
+SignTool=signtool.exe sign /a /n $qPhasOverlay$q /t http://timestamp.comodoca.com/authenticode /d $qPhasOverlay$q $f
 
 [Files]
 Source: "..\..\target\image\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs
