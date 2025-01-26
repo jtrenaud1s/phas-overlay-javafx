@@ -73,12 +73,6 @@ jobs:
           git tag "v${{ steps.get-version.outputs.final_version }}"
           git push origin "v${{ steps.get-version.outputs.final_version }}"
 
-      - name: Changelog
-        uses: Bullrich/generate-release-changelog@master
-        id: Changelog
-        env:
-          REPO: ${{ github.repository }}
-
       - name: Merge release into main
         run: |
           git checkout main
