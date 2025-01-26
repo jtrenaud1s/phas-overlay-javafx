@@ -79,7 +79,7 @@ jobs:
           git checkout main
           git pull origin main
           git merge --no-ff ${{ github.event.inputs.release_branch }} -m "chore: Merge release ${{ steps.get-version.outputs.final_version }} into main"
-          git push origin master
+          git push origin main
 
       - name: Merge release into develop
         run: |
