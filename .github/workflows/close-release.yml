@@ -134,30 +134,12 @@ jobs:
           name: PhasOverlay-Installer
           path: target\PhasOverlay-${{ steps.get-version.outputs.final_version }}-installer.exe
 
-      - name: Upload MSI
-        uses: actions/upload-artifact@v3
-        with:
-          name: PhasOverlay-MSI
-          path: target/*.msi
-
       - name: Create GitHub Release
         id: create_release
-        uses: actions/create-release@v1
+        uses: ncipollo/release-action@v1
         with:
-          tag_name: v${{ steps.get-version.outputs.final_version }}
-          release_name: "v${{ steps.get-version.outputs.final_version }}"
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload Installer to Release
-        if: ${{ success() }}
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: target\PhasOverlay-${{ steps.get-version.outputs.final_version }}-installer.exe
-          asset_name: PhasOverlay-${{ steps.get-version.outputs.final_version }}-installer.exe
-          asset_content_type: application/octet-stream
+          tag: v${{ steps.get-version.outputs.final_version }}
+          name: "v${{ steps.get-version.outputs.final_version }}"
+          artifacts: "**/*-installer.exe"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
