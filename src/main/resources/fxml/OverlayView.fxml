@@ -2,10 +2,11 @@
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.shape.Circle?>
 <?import me.jtrenaud1s.phas.overlay.component.SmudgeTimerPane?>
+<?import me.jtrenaud1s.phas.overlay.component.MapSelectorPane?>
 
 <!--
   A root Pane, with transparent background,
-  containing a SmudgeTimerPane and a Circle (for crosshair).
+  containing a SmudgeTimerPane, MapSelectorPane and a Circle (for crosshair).
 -->
 <Pane fx:id="root"
       xmlns:fx="http://javafx.com/fxml"
@@ -13,8 +14,10 @@
       style="-fx-background-color: transparent;">
 
     <SmudgeTimerPane fx:id="smudgeTimerPane"/>
+    <MapSelectorPane fx:id="mapSelectorPane"/>
     <Circle fx:id="crosshairDot"
             fill="LIMEGREEN"
             radius="3"
             visible="false"/>
 </Pane>
+

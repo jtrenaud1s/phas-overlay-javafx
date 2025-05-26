@@ -1,5 +1,6 @@
 package me.jtrenaud1s.phas.overlay.controller;
 
+import javafx.application.Platform;
 import lombok.extern.slf4j.Slf4j;
 import me.jtrenaud1s.phas.overlay.model.Keybind;
 import me.jtrenaud1s.phas.overlay.util.WindowUtil;
@@ -43,13 +44,16 @@ public final class SettingsController {
 
         loadSettings();
         view.getKeybindTable().setItems(model.getKeybinds());
+        view.getMapListView().setItems(model.getMaps());
         initializeViewBindings();
         setupKeybindEditor();
+        setupMapButtons();
         registerKeybindsToListener();
 
         overlayController.getOverlayModel().getOverlayVisible().set(model.isShowOverlayByDefault());
         overlayController.getOverlayModel().getCrosshairEnabled().set(model.isCrosshairEnabled());
         overlayController.getOverlayModel().getSmudgeVolume().set(model.getSmudgeVolume());
+        overlayController.getOverlayModel().getMapSelectionVisible().set(model.isShowMapSelection());
 
         view.getStage().initOwner(overlayController.getOverlayView().getStage());
 
@@ -118,6 +122,38 @@ public final class SettingsController {
             registerKeybindsToListener();
             view.getKeybindTable().refresh();
             keybindListener.resume();
+        });
+    }
+
+    private void setupMapButtons() {
+        // Set up actions for map selection buttons
+        view.getSelectAllMapsButton().setOnAction(evt -> {
+            model.getMaps().forEach(map -> map.setEnabled(true));
+            view.getMapListView().refresh();
+            saveSettings();
+        });
+
+        view.getDeselectAllMapsButton().setOnAction(evt -> {
+            model.getMaps().forEach(map -> map.setEnabled(false));
+            view.getMapListView().refresh();
+            saveSettings();
+        });
+
+        view.getSelectRandomMapButton().setOnAction(evt -> {
+            String selectedMap = model.selectRandomMap();
+            if (selectedMap != null) {
+                overlayController.getOverlayModel().getSelectedMap().set(selectedMap);
+            }
+        });
+
+        // Connect the show map selection checkbox to the overlay model
+        view.getShowMapSelectionCheckBox().selectedProperty()
+                .bindBidirectional(model.getShowMapSelection());
+
+        model.getShowMapSelection().addListener((obs, oldVal, newVal) -> {
+            overlayController.getOverlayModel().getMapSelectionVisible().set(newVal);
+            overlayController.getOverlayView().setMapSelectorVisible(newVal);
+            saveSettings();
         });
     }
 

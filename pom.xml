@@ -149,9 +149,9 @@
                         <phase>install</phase>
                         <configuration>
                             <target>
-                                <mkdir dir="${project.build.directory}/image/bin/native-libs"/>
+                                <mkdir dir="${project.build.directory}/bin/native-libs"/>
                                 <unzip src="${project.build.directory}/dependencies/jnativehook-${jnativehook.version}.jar"
-                                       dest="${project.build.directory}/image/bin/native-libs">
+                                       dest="${project.build.directory}/bin/native-libs">
                                     <patternset>
                                         <include name="com/github/kwhat/jnativehook/lib/**"/>
                                     </patternset>
@@ -169,74 +169,74 @@
             </plugin>
 
             <!-- JavaFX Maven Plugin to build a runtime image with jlink -->
-            <plugin>
-                <groupId>org.openjfx</groupId>
-                <artifactId>javafx-maven-plugin</artifactId>
-                <version>0.0.8</version>
-                <executions>
-                    <execution>
-                        <id>jlink-link</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>jlink</goal>
-                        </goals>
-                        <configuration>
-                            <mainClass>me.jtrenaud1s.phas.overlay.Main</mainClass>
-                            <stripDebug>true</stripDebug>
-                            <compress>2</compress>
-                            <noHeaderFiles>true</noHeaderFiles>
-                            <noManPages>true</noManPages>
-                            <launcher>PhasOverlay</launcher>
-                            <options>
-                                <option>-Djnativehook.lib.locator=me.jtrenaud1s.phas.overlay.util.JLibLocator</option>
-                            </options>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
+<!--            <plugin>-->
+<!--                <groupId>org.openjfx</groupId>-->
+<!--                <artifactId>javafx-maven-plugin</artifactId>-->
+<!--                <version>0.0.8</version>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <id>jlink-link</id>-->
+<!--                        <phase>package</phase>-->
+<!--                        <goals>-->
+<!--                            <goal>jlink</goal>-->
+<!--                        </goals>-->
+<!--                        <configuration>-->
+<!--                            <mainClass>me.jtrenaud1s.phas.overlay.PhasOverlay</mainClass>-->
+<!--                            <stripDebug>true</stripDebug>-->
+<!--                            <compress>2</compress>-->
+<!--                            <noHeaderFiles>true</noHeaderFiles>-->
+<!--                            <noManPages>true</noManPages>-->
+<!--                            <launcher>PhasOverlay</launcher>-->
+<!--                            <options>-->
+<!--                                <option>-Djnativehook.lib.locator=me.jtrenaud1s.phas.overlay.util.JLibLocator</option>-->
+<!--                            </options>-->
+<!--                        </configuration>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--            </plugin>-->
 
             <!-- Exec Maven Plugin for resource compilation and native launcher -->
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>3.1.0</version>
-                <executions>
-                    <!-- REMOVED run-innosetup here -->
-                    <execution>
-                        <id>compile-launcher-resources</id>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <executable>rc.exe</executable>
-                            <arguments>
-                                <argument>/fo</argument>
-                                <argument>${project.build.directory}\resources.res</argument>
-                                <argument>src\main\c\resources.rc</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>compile-launcher</id>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <executable>clang-cl</executable>
-                            <arguments>
-                                <argument>/Fe:${project.build.directory}\PhasOverlay.exe</argument>
-                                <argument>src\main\c\launcher.c</argument>
-                                <argument>/link</argument>
-                                <argument>/SUBSYSTEM:WINDOWS</argument>
-                                <argument>${project.build.directory}\resources.res</argument>
-                                <argument>user32.lib</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
+<!--            <plugin>-->
+<!--                <groupId>org.codehaus.mojo</groupId>-->
+<!--                <artifactId>exec-maven-plugin</artifactId>-->
+<!--                <version>3.1.0</version>-->
+<!--                <executions>-->
+<!--                    &lt;!&ndash; REMOVED run-innosetup here &ndash;&gt;-->
+<!--                    <execution>-->
+<!--                        <id>compile-launcher-resources</id>-->
+<!--                        <phase>compile</phase>-->
+<!--                        <goals>-->
+<!--                            <goal>exec</goal>-->
+<!--                        </goals>-->
+<!--                        <configuration>-->
+<!--                            <executable>rc.exe</executable>-->
+<!--                            <arguments>-->
+<!--                                <argument>/fo</argument>-->
+<!--                                <argument>${project.build.directory}\resources.res</argument>-->
+<!--                                <argument>src\main\c\resources.rc</argument>-->
+<!--                            </arguments>-->
+<!--                        </configuration>-->
+<!--                    </execution>-->
+<!--                    <execution>-->
+<!--                        <id>compile-launcher</id>-->
+<!--                        <phase>compile</phase>-->
+<!--                        <goals>-->
+<!--                            <goal>exec</goal>-->
+<!--                        </goals>-->
+<!--                        <configuration>-->
+<!--                            <executable>clang-cl</executable>-->
+<!--                            <arguments>-->
+<!--                                <argument>/Fe:${project.build.directory}\PhasOverlay.exe</argument>-->
+<!--                                <argument>src\main\c\launcher.c</argument>-->
+<!--                                <argument>/link</argument>-->
+<!--                                <argument>/SUBSYSTEM:WINDOWS</argument>-->
+<!--                                <argument>${project.build.directory}\resources.res</argument>-->
+<!--                                <argument>user32.lib</argument>-->
+<!--                            </arguments>-->
+<!--                        </configuration>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--            </plugin>-->
         </plugins>
     </build>
 </project>
