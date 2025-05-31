@@ -189,7 +189,6 @@
                             <launcher>PhasOverlay</launcher>
 
                             <options>
-                                <addModules>java.base,javafx.controls,javafx.fxml,javafx.media</addModules>
                                 <option>-Djnativehook.lib.locator=me.jtrenaud1s.phas.overlay.util.JLibLocator</option>
                             </options>
                         </configuration>
@@ -203,7 +202,6 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.1.0</version>
                 <executions>
-                    <!-- REMOVED run-innosetup here -->
                     <execution>
                         <id>compile-launcher-resources</id>
                         <phase>compile</phase>
@@ -226,13 +224,15 @@
                             <goal>exec</goal>
                         </goals>
                         <configuration>
-                            <executable>clang-cl</executable>
+                            <workingDirectory>${project.build.directory}</workingDirectory>
+                            <executable>cl.exe</executable>
                             <arguments>
                                 <argument>/Fe:${project.build.directory}\PhasOverlay.exe</argument>
                                 <argument>src\main\c\launcher.c</argument>
+                                <argument>src\main\c\logging.c</argument>
+                                <argument>${project.build.directory}\resources.res</argument>
                                 <argument>/link</argument>
                                 <argument>/SUBSYSTEM:WINDOWS</argument>
-                                <argument>${project.build.directory}\resources.res</argument>
                                 <argument>user32.lib</argument>
                             </arguments>
                         </configuration>
