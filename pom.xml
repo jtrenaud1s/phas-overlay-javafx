@@ -181,13 +181,15 @@
                             <goal>jlink</goal>
                         </goals>
                         <configuration>
-                            <mainClass>me.jtrenaud1s.phas.overlay.Main</mainClass>
+                            <mainClass>me.jtrenaud1s.phas.overlay.PhasOverlay</mainClass>
                             <stripDebug>true</stripDebug>
                             <compress>2</compress>
                             <noHeaderFiles>true</noHeaderFiles>
                             <noManPages>true</noManPages>
                             <launcher>PhasOverlay</launcher>
+
                             <options>
+                                <addModules>java.base,javafx.controls,javafx.fxml,javafx.media</addModules>
                                 <option>-Djnativehook.lib.locator=me.jtrenaud1s.phas.overlay.util.JLibLocator</option>
                             </options>
                         </configuration>
@@ -240,3 +242,4 @@
         </plugins>
     </build>
 </project>
+

@@ -12,6 +12,7 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import me.jtrenaud1s.phas.overlay.component.MapSelectorPane;
 import me.jtrenaud1s.phas.overlay.component.SmudgeTimerPane;
 import me.jtrenaud1s.phas.overlay.util.WindowUtil;
 
@@ -24,6 +25,7 @@ public class OverlayView implements Initializable {
 
     @FXML private Pane root;                // The FXML root Pane
     @FXML private SmudgeTimerPane smudgeTimerPane;
+    @FXML private MapSelectorPane mapSelectorPane;
     @FXML private Circle crosshairDot;
 
     private Stage stage;                   // The overlay stage
@@ -64,6 +66,9 @@ public class OverlayView implements Initializable {
         crosshairDot.setCenterX(width / 2.0);
         crosshairDot.setCenterY(height / 2.0);
 
+        // Initialize layout for map selector
+        updateOverlayLayout(1.0);
+
         WindowUtil.resizeOverlayToPhasmophobia(this.stage);
         this.stage.hide();
         WindowUtil.makeMouseTransparent(this.stage);
@@ -95,13 +100,34 @@ public class OverlayView implements Initializable {
     }
 
     /**
+     * Updates the selected map displayed in the map selector.
+     */
+    public void setSelectedMap(String mapName) {
+        if (mapSelectorPane != null) {
+            mapSelectorPane.setSelectedMap(mapName);
+        }
+    }
+
+    /**
+     * Shows or hides the map selector based on settings.
+     */
+    public void setMapSelectorVisible(boolean visible) {
+        if (mapSelectorPane != null) {
+            mapSelectorPane.setVisible(visible);
+        }
+    }
+
+    /**
      * Reposition/rescale the timer pane.
      */
-    public void updateTimerPaneLayout(double scale) {
+    public void updateOverlayLayout(double scale) {
         if (smudgeTimerPane == null) return;
+        if (mapSelectorPane == null) return;
+
 
         double timerWidth = smudgeTimerPane.getLayoutBounds().getWidth();
         double timerHeight = smudgeTimerPane.getLayoutBounds().getHeight();
+
         double screenWidth = Screen.getPrimary().getBounds().getWidth();
 
         double scaledWidth = timerWidth * scale;
@@ -112,9 +138,15 @@ public class OverlayView implements Initializable {
         double marginRight = 10.0;
         double marginTop = 10.0;
 
+        mapSelectorPane.setMinWidth(timerWidth);
+
         smudgeTimerPane.setScaleX(scale);
         smudgeTimerPane.setScaleY(scale);
+        mapSelectorPane.setScaleX(scale);
+        mapSelectorPane.setScaleY(scale);
         smudgeTimerPane.setLayoutX(screenWidth - scaledWidth - marginRight + (extraWidth / 2));
         smudgeTimerPane.setLayoutY(marginTop + (extraHeight / 2));
+        mapSelectorPane.setLayoutX(screenWidth - scaledWidth - marginRight + (extraWidth / 2));
+        mapSelectorPane.setLayoutY(smudgeTimerPane.getLayoutY() + timerHeight * scale + marginTop);
     }
 }

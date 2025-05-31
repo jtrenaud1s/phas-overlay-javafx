@@ -7,6 +7,7 @@
   A BorderPane as the root, with a TabPane in the center.
   - General Tab -> ScrollPane -> VBox of TitledPanes
   - Keybinds Tab -> TableView
+  - Maps Tab -> VBox with ListView and control buttons
 -->
 
 <BorderPane fx:id="root" xmlns:fx="http://javafx.com/fxml"
@@ -55,6 +56,7 @@
                                 <CheckBox fx:id="showOverlayCheckBox" text="Show Overlay by Default"/>
                                 <CheckBox fx:id="crosshairCheckBox" text="Enable Crosshair"/>
                                 <Button fx:id="resetOverlayButton" text="Reset Overlay Position"/>
+                                <CheckBox fx:id="showMapSelectionCheckBox" text="Show Map Selection"/>
                             </VBox>
                         </TitledPane>
 
@@ -84,6 +86,24 @@
                         <TableColumn fx:id="chordCol" text="Keybind"/>
                     </columns>
                 </TableView>
+            </Tab>
+
+            <!-- Maps Tab -->
+            <Tab fx:id="mapsTab" text="Maps" closable="false">
+                <VBox>
+                    <padding>
+                        <Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/>
+                    </padding>
+                    <spacing>10.0</spacing>
+                    <Label text="Select maps to include in random selection:"/>
+                    <ListView fx:id="mapListView" VBox.vgrow="ALWAYS"/>
+                    <HBox>
+                        <spacing>10</spacing>
+                        <Button fx:id="selectAllMapsButton" text="Select All"/>
+                        <Button fx:id="deselectAllMapsButton" text="Deselect All"/>
+                        <Button fx:id="selectRandomMapButton" text="Select Random Map Now"/>
+                    </HBox>
+                </VBox>
             </Tab>
         </TabPane>
     </center>

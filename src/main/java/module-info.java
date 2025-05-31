@@ -4,7 +4,6 @@ module PhasOverlay {
     // ------------------------------------------------------------
     requires ch.qos.logback.classic;
     requires com.fasterxml.jackson.databind;
-    requires com.github.kwhat.jnativehook;
     requires com.sun.jna;
     requires com.sun.jna.platform;
     requires java.desktop;     // still needed by JNativeHook
@@ -14,15 +13,16 @@ module PhasOverlay {
     requires javafx.media;
     requires org.slf4j;
     requires static lombok;
+    requires com.github.kwhat.jnativehook;
 
     // ------------------------------------------------------------
     // Public exports
     // ------------------------------------------------------------
-    exports me.jtrenaud1s.phas.overlay;
+
     exports me.jtrenaud1s.phas.overlay.keybind;
     exports me.jtrenaud1s.phas.overlay.model;
     exports me.jtrenaud1s.phas.overlay.util to com.github.kwhat.jnativehook;
-
+    exports me.jtrenaud1s.phas.overlay to com.github.kwhat.jnativehook, javafx.graphics;
     // ------------------------------------------------------------
     // Open packages for reflection / FXML / serialization
     // ------------------------------------------------------------

@@ -13,13 +13,14 @@ import me.jtrenaud1s.phas.overlay.controller.OverlayController;
 import me.jtrenaud1s.phas.overlay.controller.SettingsController;
 import me.jtrenaud1s.phas.overlay.keybind.KeybindListener;
 import me.jtrenaud1s.phas.overlay.keybind.KeybindRecorder;
+import me.jtrenaud1s.phas.overlay.model.Map;
 import me.jtrenaud1s.phas.overlay.model.OverlayModel;
 import me.jtrenaud1s.phas.overlay.model.SettingsModel;
 import me.jtrenaud1s.phas.overlay.view.OverlayView;   // FXML-based controller for the overlay
 import me.jtrenaud1s.phas.overlay.view.SettingsView; // FXML-based controller for settings
 
 @Slf4j
-public class Main extends Application {
+public class PhasOverlay extends Application {
 
     // UI Controllers
     private OverlayView overlayView;
@@ -181,6 +182,16 @@ public class Main extends Application {
         // Toggle Settings
         keybindListener.registerAction("Toggle Settings", () ->
                 Platform.runLater(settingsView::toggleStage)
+        );
+
+        // Select Random Map
+        keybindListener.registerAction("Select Random Map", () ->
+                Platform.runLater(() -> {
+                    String selectedMap = settingsModel.selectRandomMap();
+                    if (selectedMap != null) {
+                        overlayModel.getSelectedMap().set(selectedMap);
+                    }
+                })
         );
 
         // Quit

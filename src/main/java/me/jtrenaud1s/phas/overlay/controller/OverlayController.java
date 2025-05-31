@@ -21,7 +21,7 @@ public final class OverlayController {
         overlayModel.getOverlayVisible().addListener((obs, oldVal, newVal) -> {
             if (newVal) {
                 overlayView.showOverlay();
-                overlayView.updateTimerPaneLayout(SCALE);
+                overlayView.updateOverlayLayout(SCALE);
             } else {
                 overlayView.hideOverlay();
             }
@@ -36,7 +36,11 @@ public final class OverlayController {
             overlayView.setSmudgeVolume(newVal.doubleValue());
         });
 
-        overlayView.updateTimerPaneLayout(SCALE);
+        // Bind the selected map in the model to the map selector pane
+        overlayModel.getSelectedMap().addListener((obs, oldMap, newMap) -> {
+                overlayView.getMapSelectorPane().setSelectedMap(newMap);
+        });
+
         overlayView.setCrosshairVisible(overlayModel.getCrosshairEnabled().get());
         log.info("Crosshair enabled: {}", overlayModel.getCrosshairEnabled().get());
     }

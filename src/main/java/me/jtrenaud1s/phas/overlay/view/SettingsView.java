@@ -5,12 +5,14 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.CheckBoxListCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import lombok.Getter;
 import me.jtrenaud1s.phas.overlay.model.Keybind;
+import me.jtrenaud1s.phas.overlay.model.Map;
 import me.jtrenaud1s.phas.overlay.util.WindowUtil;
 
 import java.net.URL;
@@ -27,6 +29,7 @@ public class SettingsView implements Initializable {
     @FXML private TabPane tabPane;
     @FXML private Tab generalTab;
     @FXML private Tab keybindsTab;
+    @FXML private Tab mapsTab;
     @FXML private ScrollPane generalScrollPane;
 
     // Keybinds Table
@@ -34,11 +37,18 @@ public class SettingsView implements Initializable {
     @FXML private TableColumn<Keybind, String> nameCol;
     @FXML private TableColumn<Keybind, String> chordCol;
 
+    // Maps List
+    @FXML private ListView<Map> mapListView;
+    @FXML private Button selectAllMapsButton;
+    @FXML private Button deselectAllMapsButton;
+    @FXML private Button selectRandomMapButton;
+
     // CheckBoxes
     @FXML private CheckBox countUpCheckBox;
     @FXML private CheckBox showOverlayCheckBox;
     @FXML private CheckBox crosshairCheckBox;
     @FXML private CheckBox settingsHiddenCheckBox;
+    @FXML private CheckBox showMapSelectionCheckBox;
 
     // Slider
     @FXML private Slider smudgeVolumeSlider;
@@ -47,7 +57,7 @@ public class SettingsView implements Initializable {
     @FXML private Button resetOverlayButton;
 
     // -- Non-FXML fields ---------------------------------------------
-    private Stage stage;  // We’ll store a reference to the stage here.
+    private Stage stage;  // We'll store a reference to the stage here.
 
     /**
      * Called by the FXML loader when initialization is complete.
@@ -61,12 +71,20 @@ public class SettingsView implements Initializable {
                 cellData -> new SimpleStringProperty(cellData.getValue().toString())
         );
 
+        // Setup map list view with checkboxes
+        mapListView.setCellFactory(CheckBoxListCell.forListView(Map::enabledProperty));
+
         // Setup tooltips
         countUpCheckBox.setTooltip(new Tooltip("Reverse the timer (count up) instead of down."));
         showOverlayCheckBox.setTooltip(new Tooltip("Show the overlay by default at startup."));
         crosshairCheckBox.setTooltip(new Tooltip("Show or hide a crosshair in the center of the screen."));
         settingsHiddenCheckBox.setTooltip(new Tooltip("Hide the settings window by default at startup."));
         resetOverlayButton.setTooltip(new Tooltip("Resize and move overlay to match Phasmophobia's window."));
+        showMapSelectionCheckBox.setTooltip(new Tooltip("Show or hide the map selection in the overlay."));
+
+        selectAllMapsButton.setTooltip(new Tooltip("Select all maps for random selection."));
+        deselectAllMapsButton.setTooltip(new Tooltip("Deselect all maps from random selection."));
+        selectRandomMapButton.setTooltip(new Tooltip("Select a random map now from enabled maps."));
 
         // Prevent close => hide window
         Platform.setImplicitExit(false);
