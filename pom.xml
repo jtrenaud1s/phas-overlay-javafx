@@ -228,8 +228,8 @@
                             <executable>cl.exe</executable>
                             <arguments>
                                 <argument>/Fe:${project.build.directory}\PhasOverlay.exe</argument>
-                                <argument>src\main\c\launcher.c</argument>
-                                <argument>src\main\c\logging.c</argument>
+                                <argument>${project.basedir}\src\main\c\launcher.c</argument>
+                                <argument>${project.basedir}\src\main\c\logging.c</argument>
                                 <argument>${project.build.directory}\resources.res</argument>
                                 <argument>/link</argument>
                                 <argument>/SUBSYSTEM:WINDOWS</argument>
