@@ -1,84 +1,111 @@
+#include "logging.h"
 #include <windows.h>
 #include <stdio.h>
+#include <stdlib.h>
 
-void ShowErrorMessage(const char *action) {
-    DWORD errorCode = GetLastError();
-    char errorMessage[512];
 
-    // Format the error message from the error code
-    FormatMessageA(
-        FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-        NULL,
-        errorCode,
-        0, // Default language
-        errorMessage,
-        sizeof(errorMessage),
-        NULL
-    );
-
-    // Display the action, error code, and message
-    char fullMessage[1024];
-    snprintf(
-        fullMessage,
-        sizeof(fullMessage),
-        "Action: %s\nError Code: %lu\nMessage: %s",
-        action,
-        errorCode,
-        errorMessage
-    );
-
-    MessageBoxA(NULL, fullMessage, "Error", MB_OK | MB_ICONERROR);
+// Function to initialize the launcher
+void InitializeLauncher() {
+    DebugLog("Launcher started.");
 }
 
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
-    // Path to your jlink image's "javaw.exe"
-    char javawPath[MAX_PATH];
-    GetModuleFileNameA(NULL, javawPath, MAX_PATH);
+// Function to get the module file name
+int GetModuleFileNameSafe(char *javawPath, size_t size) {
+    if (GetModuleFileNameA(NULL, javawPath, (DWORD)size) == 0) {
+        DebugLog("Failed to get module file name.");
+        ShowErrorMessage("GetModuleFileNameA");
+        return 0;
+    }
+    DebugLog("Got module file name.");
+    DebugLog(javawPath);
+    return 1;
+}
 
-    // Strip the launcher.exe name from the path, leaving the directory
+// Function to strip the executable name from the path
+int StripExecutableName(char *javawPath) {
     char *slash = strrchr(javawPath, '\\');
     if (slash) {
-        *slash = '\0'; // remove launcher.exe from the path
+        *slash = '\0';
+        DebugLog("Stripped executable name from path.");
+        DebugLog(javawPath);
+        return 1;
+    } else {
+        DebugLog("Failed to find backslash in path.");
+        ShowErrorMessage("Path parsing");
+        return 0;
     }
+}
 
-    // Append \bin\javaw.exe
-    lstrcatA(javawPath, "\\bin\\javaw.exe");
-
-    // Build the command line we want to run
-    char cmdLine[1024];
-    ZeroMemory(cmdLine, sizeof(cmdLine));
+// Function to build the command line
+void BuildCommandLine(char *cmdLine, const char *javawPath) {
+    ZeroMemory(cmdLine, 1024);
     lstrcatA(cmdLine, "\"");
     lstrcatA(cmdLine, javawPath);
     lstrcatA(cmdLine, "\" -D\"jnativehook.lib.locator\"=me.jtrenaud1s.phas.overlay.util.JLibLocator");
-    lstrcatA(cmdLine, " --module PhasOverlay/me.jtrenaud1s.phas.overlay.Main");
+    lstrcatA(cmdLine, " --module PhasOverlay/me.jtrenaud1s.phas.overlay.PhasOverlay");
+    DebugLog("Built command line:");
+    DebugLog(cmdLine);
+}
 
+// Function to launch the process
+int LaunchProcess(const char *cmdLine) {
     STARTUPINFOA si;
     PROCESS_INFORMATION pi;
     ZeroMemory(&si, sizeof(si));
     si.cb = sizeof(si);
     ZeroMemory(&pi, sizeof(pi));
 
-    // CreateProcess with javaw.exe
+    DebugLog("Calling CreateProcessA...");
     if (!CreateProcessA(
-            NULL,        // lpApplicationName
-            cmdLine,     // lpCommandLine
-            NULL,        // lpProcessAttributes
-            NULL,        // lpThreadAttributes
-            FALSE,       // bInheritHandles
-            0,           // dwCreationFlags
-            NULL,        // lpEnvironment
-            NULL,        // lpCurrentDirectory
-            &si,         // lpStartupInfo
-            &pi          // lpProcessInformation
-        ))
-    {
-        // Show error details if CreateProcess fails
+            NULL,
+            (LPSTR)cmdLine,
+            NULL,
+            NULL,
+            FALSE,
+            0,
+            NULL,
+            NULL,
+            &si,
+            &pi
+        )) {
+        DebugLog("CreateProcessA failed.");
         ShowErrorMessage("Launching Java application");
+        return 0;
+    }
+
+    DebugLog("Process launched successfully.");
+    CloseHandle(pi.hProcess);
+    CloseHandle(pi.hThread);
+    return 1;
+}
+
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+    InitializeLauncher();
+
+    char javawPath[MAX_PATH];
+    if (!GetModuleFileNameSafe(javawPath, sizeof(javawPath))) {
+        CleanupLog();
         return 1;
     }
 
-    // We don't need the thread or process handles
-    CloseHandle(pi.hProcess);
-    CloseHandle(pi.hThread);
+    if (!StripExecutableName(javawPath)) {
+        CleanupLog();
+        return 1;
+    }
+
+    lstrcatA(javawPath, "\\bin\\javaw.exe");
+    DebugLog("Appended \\bin\\javaw.exe:");
+    DebugLog(javawPath);
+
+    char cmdLine[1024];
+    BuildCommandLine(cmdLine, javawPath);
+
+    if (!LaunchProcess(cmdLine)) {
+        CleanupLog();
+        return 1;
+    }
+
+    CleanupLog();
     return 0;
 }
+
